@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "transfer-service"
+version = "0.1.0"
+description = ""
+authors = ["saneknapenek <kolesnikovag22@gmail.com>"]
+readme = "README.md"
+packages = [{include = "transfer_service"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.98.0"
+pydantic = "^1.10.9"
+sqlalchemy = "^2.0.17"
+asyncpg = "^0.27.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

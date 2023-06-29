@@ -12,7 +12,12 @@ fastapi = "^0.98.0"
 pydantic = "^1.10.9"
 sqlalchemy = "^2.0.17"
 asyncpg = "^0.27.0"
+uvicorn = "^0.22.0"
+alembic = "^1.11.1"
 
+
+[tool.poetry.group.dev.dependencies]
+environs = "^9.5.0"
 
 [build-system]
 requires = ["poetry-core"]

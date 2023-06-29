@@ -7,9 +7,9 @@ from sqlalchemy.exc import IntegrityError
 from asyncpg.exceptions import UniqueViolationError
 
 from database import get_db_session
-from actions import _create_user, _delete_user, _update_user, _get_user_by_email, _get_user_by_login
-from schemes import ResponseUserModel, RequestUser, UserCreateRequest, UserUpdateRequest, ResponseUserLogin, LoginStr
-from exceptions import UserNotFound
+from .actions import _create_user, _delete_user, _update_user, _get_user_by_email, _get_user_by_login
+from .schemes import ResponseUserModel, RequestUser, UserCreateRequest, UserUpdateRequest, ResponseUserLogin, LoginStr
+from .exceptions import UserNotFound
 
 
 user_router = APIRouter()

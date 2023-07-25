@@ -5,11 +5,8 @@ from datetime import datetime
 
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 
-
-
-Base = declarative_base()
 
 
 class ROLES(enum.Enum):
@@ -25,57 +22,43 @@ class SERVICES(enum.Enum):
     GOOGLE = "google"
 
 
-class ObjectsFromService(Base):
-    __tablename__ = "objects_from_service"
 
-    service: str = Column(String, ForeignKey("service.name"))
-    objects: str = Column(String, ForeignKey("object.hash"))
-    name_on_service: str = Column(String, nullable=False)
-    created_on_service: datetime = Column(datetime, nullable=False)
-    modified_on_service: datetime = Column(datetime, nullable=False)
+class Base(DeclarativeBase):
 
-
-class ServicesForUser(Base):
-    __tablename__ = "services_for_user"
-
-    user: uuid = Column(UUID, ForeignKey("user.id"))
-    service: str = Column(String, ForeignKey("service.name"))
-    email: str = Column(String, nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4, unique=True)
 
 
 class User(Base):
     __tablename__ = "user"
 
-    id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    login : str = Column(String, nullable=False, unique=True)
-    email: str = Column(String, nullable=False, unique=True)
-    name: str = Column(String, nullable=False)
-    is_active: bool = Column(Boolean(), default=True)
-    hashed_password: str = Column(String, nullable=False)
-    role: int = Column(Integer, default=ROLES.USER.value)
-    service: str = relationship("Service",
-                                secondary=ServicesForUser.__table__,
-                                back_populates="user")
+    login : Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(30), nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    hashed_password: Mapped[str] = mapped_column(nullable=False)
+    role: Mapped[int] = mapped_column(default=ROLES.USER.value)
+    services: Mapped[list["Service"]] = relationship(back_populates="user")
 
 
 class Object(Base):
     __tablename__ = "object"
 
-    hash: str = Column(String, primary_key=True, unique=True)
-    datetime_created: datetime = Column(datetime, nullable=False)
-    content_type: str = Column(String, nullable=False)
-    service = relationship("Service",
-                           secondary=ObjectsFromService.__table__,
-                           back_populates="object")
+    hash: Mapped[str] = mapped_column(nullable=False)
+    datetime_created: Mapped[datetime] = mapped_column(nullable=False)
+    content_type: Mapped[str] = mapped_column(nullable=False)
+    name_on_service: Mapped[str] = mapped_column(nullable=False)
+    created_on_service: Mapped[datetime] = mapped_column(nullable=False)
+    modified_on_service: Mapped[datetime] = mapped_column(nullable=False)
+    service_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("service.id"))
+    service: Mapped["Service"] = relationship(back_populates="objects")
 
 
 class Service(Base):
     __tablename__ = "service"
 
-    name: str = Column(Enum(SERVICES), primary_key=True)
-    user: uuid = relationship("User",
-                              secondary=ServicesForUser.__table__,
-                              back_populates="service")
-    objects: str =relationship("Object",
-                               secondary=ObjectsFromService.__table__,
-                               back_populates="service")
+    name: Mapped[str] = mapped_column(default=Enum(SERVICES), primary_key=True, nullable=False)
+    token: Mapped[str] = mapped_column(nullable=False)
+    user_email: Mapped[str] = mapped_column(nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
+    user: Mapped["User"] = relationship(back_populates="services")
+    objects: Mapped[list["Object"]] = relationship(back_populates="service")

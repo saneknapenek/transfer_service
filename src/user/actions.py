@@ -4,9 +4,9 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import EmailStr
 
-from .schemes import UserCreate
-from db import models
-from db import dals
+from .schemes import ResponseUserModel
+from src.db import models
+from src.db import dals
 
 
 
@@ -14,7 +14,7 @@ class Hasher:
     pass
 
 
-async def _create_user(user: UserCreate, session: AsyncSession) -> Union[models.User, None]:
+async def _create_user(user: ResponseUserModel, session: AsyncSession) -> Union[models.User, None]:
     user_dal = dals.UserDAL(session)
     new_user = await user_dal.create_user(
         name=user.name,

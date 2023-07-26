@@ -1,50 +1,41 @@
 from uuid import UUID
+from typing import Optional, Union
+import re
 
 from fastapi.exceptions import HTTPException
-from pydantic import BaseModel, validator, EmailStr
-from pydantic.types import Optional, Union
+from pydantic import BaseModel, EmailStr, field_validator
 from pydantic import constr
 
 
 
-PATTERN_FOR_LOGIN = ...
-PATTERN_FOR_NAME = ...
-PATTERN_FOR_PASSWORD = ...
+PATTERN_FOR_NAME = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
+# PATTERN_FOR_EMAIL = re.compile(r"^((([0-9A-Za-z]{1}[-0-9A-z\.]{1,}[0-9A-Za-z]{1})|([0-9А-Яа-я]{1}[-0-9А-я\.]{1,}[0-9А-Яа-я]{1}))@([-A-Za-z]{1,}\.){1,2}[-A-Za-z]{2,})$")
+PATTERN_FOR_PASSWORD_LOWWER = re.compile(r"[a-z]+")
+PATTERN_FOR_PASSWORD_UPPER = re.compile(r"[A-Z]+")
+PATTERN_FOR_PASSWORD_NUMBER = re.compile(r"[0-9]+")
+PATTERN_FOR_LOGIN = re.compile(r"^[a-zA-Z_\d]+$")
 
 
 class BaseResponseModel(BaseModel):
     class Config:
-        orm_mode = True
-
-
-class LoginStr(BaseModel, str):
-
-    login: str
-
-    @validator("login")
-    def validate_name(cls, value):
-        if not PATTERN_FOR_LOGIN.match(value):
-            raise HTTPException(
-                status_code=422, detail="Login should contains only letters or numbers"
-            )
-        return value
+        from_attributes = True
 
 
 class ResponseUserModel(BaseResponseModel):
 
-    login: LoginStr
+    login: str
     email: EmailStr
     name: str
 
 
 class ResponseUserLogin(BaseResponseModel):
 
-    login: LoginStr
+    login: str
 
 
 class RequestUser(BaseModel):
 
-    username: Union[LoginStr, EmailStr]
+    username: Union[str, EmailStr]
 
     @property
     def is_email(self):
@@ -53,27 +44,58 @@ class RequestUser(BaseModel):
 
 class UserUpdateRequest(BaseModel):
     
-    login: Optional[LoginStr]
-    name: Optional[constr(min_length=1)]
+    login: Optional[str]
+    name: Optional[constr(min_length=2)]
     email: Optional[EmailStr]
 
-    @validator("name")
+    @field_validator("name")
     def validate_name(cls, value):
         if not PATTERN_FOR_NAME.match(value):
             raise HTTPException(
                 status_code=422, detail="Name should contains only letters"
+            )
+        if len(value) < 1:
+            raise HTTPException(
+                status_code=422, detail="Name must contain at least two characters"
+            )
+        return value
+
+    @field_validator("login")
+    def validate_login(cls, value):
+        if not PATTERN_FOR_LOGIN.match(value):
+            raise HTTPException(
+                status_code=422, detail="Login must contain only latin letters, numbers, and underscores"
+            )
+        if len(value) < 2:
+            raise HTTPException(
+                status_code=422, detail="Login must contain at least three characters"
             )
         return value
 
 
 class UserCreateRequest(UserUpdateRequest):
 
+    login: str
+    name: constr(min_length=1)
+    email: EmailStr
     password: str
 
-    @validator("password")
+    @field_validator("password")
     def validate_password(cls, value):
-        if not PATTERN_FOR_PASSWORD.match(value):
+        if not PATTERN_FOR_PASSWORD_NUMBER.search(value):
             raise HTTPException(
-                status_code=422, detail="Password is not valid"
+                status_code=422, detail="String contains at least one number"
+            )
+        if not PATTERN_FOR_PASSWORD_LOWWER.search(value):
+            raise HTTPException(
+                status_code=422, detail="String contains at least one lowercase Latin letter"
+            )
+        if not PATTERN_FOR_PASSWORD_UPPER.search(value):
+            raise HTTPException(
+                status_code=422, detail="String contains at least one uppercase Latin letter"
+            )
+        if len(value) < 8:
+            raise HTTPException(
+                status_code=422, detail="Password must contain at least eight characters"
             )
         return value

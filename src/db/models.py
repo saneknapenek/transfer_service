@@ -40,8 +40,8 @@ class User(Base):
     services: Mapped[list["Service"]] = relationship(back_populates="user")
 
 
-class Object(Base):
-    __tablename__ = "object"
+class Media(Base):
+    __tablename__ = "media"
 
     hash: Mapped[str] = mapped_column(nullable=False)
     datetime_created: Mapped[datetime] = mapped_column(nullable=False)
@@ -50,7 +50,7 @@ class Object(Base):
     created_on_service: Mapped[datetime] = mapped_column(nullable=False)
     modified_on_service: Mapped[datetime] = mapped_column(nullable=False)
     service_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("service.id"))
-    service: Mapped["Service"] = relationship(back_populates="objects")
+    service: Mapped["Service"] = relationship(back_populates="medias")
 
 
 class Service(Base):
@@ -61,4 +61,4 @@ class Service(Base):
     user_email: Mapped[str] = mapped_column(nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
     user: Mapped["User"] = relationship(back_populates="services")
-    objects: Mapped[list["Object"]] = relationship(back_populates="service")
+    medias: Mapped[list["Media"]] = relationship(back_populates="service")

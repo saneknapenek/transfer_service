@@ -25,7 +25,7 @@ class Repository(abs):
         raise NotImplementedError
     
 
-class SQLAlchemyRepo(Repository):
+class SQLAlchemyRepository(Repository):
 
     model: DeclarativeBase
     session: AsyncSession
@@ -54,11 +54,5 @@ class SQLAlchemyRepo(Repository):
     async def get(self, id: int) -> DeclarativeBase:
         stmt = (select(self.model).
                 where(self.model.id==id))
-        res = await self.session.execute(stmt)
-        return res.first()
-    
-    async def get_for_username(self, username: str) -> DeclarativeBase:
-        stmt = (select(self.model).
-                where(self.model.login==username))
         res = await self.session.execute(stmt)
         return res.first()

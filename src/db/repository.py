@@ -6,7 +6,7 @@ from sqlalchemy import insert, select, update, delete
 
 
 
-class Repository(abs):
+class Repository(ABC):
     
     @abstractmethod
     async def create():
@@ -28,7 +28,6 @@ class Repository(abs):
 class SQLAlchemyRepository(Repository):
 
     model: DeclarativeBase
-    session: AsyncSession
     
     async def create(self, data: dict) -> DeclarativeBase:
         stmt = (insert(self.model).

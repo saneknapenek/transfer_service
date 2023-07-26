@@ -3,11 +3,11 @@ from typing import Generator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-import env
+from src.env import DATABASE_URL
 
 
 engine = create_async_engine(
-    env.DATABASE_URL,
+    DATABASE_URL,
     future=True,
     # echo=True,
     execution_options={"isolation_level": "AUTOCOMMIT"},

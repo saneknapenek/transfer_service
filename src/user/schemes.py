@@ -6,6 +6,8 @@ from fastapi.exceptions import HTTPException
 from pydantic import BaseModel, EmailStr, field_validator
 from pydantic import constr
 
+from src.auth.hashing import Hasher
+
 
 
 PATTERN_FOR_NAME = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
@@ -98,4 +100,5 @@ class UserCreateRequest(UserUpdateRequest):
             raise HTTPException(
                 status_code=422, detail="Password must contain at least eight characters"
             )
-        return value
+        hashed_password = Hasher.get_password_hash(value)
+        return hashed_password

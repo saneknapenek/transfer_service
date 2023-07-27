@@ -1,17 +1,25 @@
+from datetime import timedelta
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter
-from fastapi.exceptions import HTTPException
 from fastapi import Depends
+from fastapi import status
+from fastapi.exceptions import HTTPException
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
-from asyncpg.exceptions import UniqueViolationError
 
 from src.database import get_db_session
+from src.db.models import User
+
+from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES
+from src.auth.security import authenticate_user, create_access_token, get_current_user
+from src.auth.schemes import OAuth2RequestForm, Token
+
 # from .actions import _create_user, _delete_user, _update_user, _get_user_by_email, _get_user_by_login
 from .schemes import ResponseUserModel, RequestUser, UserCreateRequest, UserUpdateRequest, ResponseUserLogin
 from .exceptions import UserNotFound
+
 
 
 user_router = APIRouter()
@@ -81,7 +89,41 @@ user_router = APIRouter()
 
 from src.db.repositories.user import UserAlchemy
 from src.user.schemes import UserCreateRequest
-@user_router.post("/test")
-async def handler_test(data: UserCreateRequest, session: Annotated[AsyncSession, Depends(get_db_session)]):
-    result = await UserAlchemy().create(data=data.dict())
-    return result
+
+@user_router.get("/test")
+async def read_items(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)]):
+    response = await UserAlchemy(session=session).get(id)
+    return response
+
+@user_router.delete("/tset")
+async def delet_t(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)], current_user: User = Depends(get_current_user)):
+    response = await UserAlchemy(session=session).deactivate(id)
+    return response
+
+
+auth_router = APIRouter(tags=["auth"])
+
+
+@auth_router.post("/authentication", response_model=Token)
+async def login_for_access_token(
+    form_data: Annotated[OAuth2RequestForm, Depends()],
+    session: Annotated[AsyncSession, Depends(get_db_session)]
+):
+    get_user = UserAlchemy(session=session).get_for_login
+    user = await authenticate_user(form_data.username, form_data.password, get_user=get_user)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = await create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@auth_router.post("/registration")
+async def registration(data: UserCreateRequest, session: Annotated[AsyncSession, Depends(get_db_session)]):
+    result = await UserAlchemy(session=session).create(data=data.model_dump())
+    return result.dict()

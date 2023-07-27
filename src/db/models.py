@@ -1,3 +1,4 @@
+from typing import Any
 import uuid
 import enum
 from datetime import datetime
@@ -6,6 +7,8 @@ from datetime import datetime
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
+from sqlalchemy import inspect
+from sqlalchemy.orm import ColumnProperty
 
 
 
@@ -27,6 +30,14 @@ class Base(DeclarativeBase):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4, unique=True)
 
+    def dict(self) -> dict:
+        attributes = {}
+        attrs = inspect(self.__class__).attrs
+        for column in attrs.values():
+            if isinstance(column, ColumnProperty):
+                attributes[column.key] = self.__dict__[column.key]
+        return attributes
+
 
 class User(Base):
     __tablename__ = "user"
@@ -35,9 +46,13 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
     name: Mapped[str] = mapped_column(String(30), nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
-    hashed_password: Mapped[str] = mapped_column(nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
     role: Mapped[int] = mapped_column(default=ROLES.USER.value)
     services: Mapped[list["Service"]] = relationship(back_populates="user")
+
+    @property
+    def username(self):
+        return self.login
 
 
 class Media(Base):

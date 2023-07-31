@@ -77,3 +77,10 @@ class Service(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
     user: Mapped["User"] = relationship(back_populates="services")
     medias: Mapped[list["Media"]] = relationship(back_populates="service")
+
+
+class UsedTokens(Base):
+    __tablename__ = "used_tokens"
+
+    token_id: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
+    created: Mapped[datetime] = mapped_column(default=datetime.utcnow())

@@ -6,15 +6,16 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import status
 from fastapi.exceptions import HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database import get_db_session
 from src.db.models import User
 
-from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES
-from src.auth.security import authenticate_user, create_access_token, get_current_user
-from src.auth.schemes import OAuth2RequestForm, Token
+from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_HOURS
+from src.auth.security import authenticate_user, create_access_token, create_refresh_token, get_current_user
+from src.auth.schemes import Token
 
 # from .actions import _create_user, _delete_user, _update_user, _get_user_by_email, _get_user_by_login
 from .schemes import ResponseUserModel, RequestUser, UserCreateRequest, UserUpdateRequest, ResponseUserLogin
@@ -91,8 +92,8 @@ from src.db.repositories.user import UserAlchemy
 from src.user.schemes import UserCreateRequest
 
 @user_router.get("/", response_model=ResponseUserModel)
-async def get_user(session: Annotated[AsyncSession, Depends(get_db_session)],
-                   current_user=Depends(get_current_user)):
+async def get_user(id: str, session: Annotated[AsyncSession, Depends(get_db_session)],
+                   current_user: Annotated[User, Depends(get_current_user)]):
     response = await UserAlchemy(session=session).get(current_user.id)
     return response.dict()
 
@@ -115,7 +116,7 @@ auth_router = APIRouter(tags=["auth"])
 
 @auth_router.post("/authentication", response_model=Token)
 async def login_for_access_token(
-    form_data: Annotated[OAuth2RequestForm, Depends()],
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(get_db_session)]
 ):
     get_user = UserAlchemy(session=session).get_for_login
@@ -130,7 +131,11 @@ async def login_for_access_token(
     access_token = await create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token_expires = timedelta(hours=REFRESH_TOKEN_EXPIRE_HOURS)
+    refresh_token = await create_refresh_token(
+        data={"sub": user.username}, expires_delta=refresh_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
 
 @auth_router.post("/registration")
 async def registration(data: UserCreateRequest, session: Annotated[AsyncSession, Depends(get_db_session)]):

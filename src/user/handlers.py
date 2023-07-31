@@ -90,14 +90,23 @@ user_router = APIRouter()
 from src.db.repositories.user import UserAlchemy
 from src.user.schemes import UserCreateRequest
 
-@user_router.get("/test")
-async def read_items(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)]):
-    response = await UserAlchemy(session=session).get(id)
-    return response
+@user_router.get("/", response_model=ResponseUserModel)
+async def get_user(session: Annotated[AsyncSession, Depends(get_db_session)],
+                   current_user=Depends(get_current_user)):
+    response = await UserAlchemy(session=session).get(current_user.id)
+    return response.dict()
 
-@user_router.delete("/tset")
-async def delet_t(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)], current_user: User = Depends(get_current_user)):
-    response = await UserAlchemy(session=session).deactivate(id)
+@user_router.patch("/", response_model=ResponseUserModel)
+async def update_user(data: UserUpdateRequest,
+                      session: Annotated[AsyncSession, Depends(get_db_session)],
+                      current_user=Depends(get_current_user)):
+    response = await UserAlchemy(session=session).update(data=data.model_dump(exclude_none=True), id=current_user.id)
+    return response.dict()
+
+@user_router.delete("/", response_model=UUID)
+async def delete_user(session: Annotated[AsyncSession, Depends(get_db_session)],
+                      current_user=Depends(get_current_user)):
+    response = await UserAlchemy(session=session).deactivate(current_user.id)
     return response
 
 

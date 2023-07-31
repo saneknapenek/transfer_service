@@ -30,6 +30,9 @@ class SQLAlchemyRepository(Repository):
 
     model: DeclarativeBase
     
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
     async def create(self, data: dict) -> DeclarativeBase:
         stmt = (insert(self.model).
                 values(**data).

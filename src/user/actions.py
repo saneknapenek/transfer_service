@@ -47,3 +47,17 @@ async def _delete_user(login: str, session: AsyncSession) -> Union[str, None]:
         user_dal = dals.UserDAL(session)
         user_login = await user_dal.delete_user(str(login))
         return user_login
+
+
+from src.db.repositories.user import UserAlchemy
+from src.db.models import User
+from src.db.settings import get_db_session
+
+async def actions_user():
+    session = get_db_session()
+
+
+    class UserActions:
+        model = User
+        session = get_db_session()
+    return UserAlchemy(session=session)

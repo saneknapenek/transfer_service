@@ -13,9 +13,6 @@ class UserAlchemy(SQLAlchemyRepository):
 
     model: User = User
 
-    def __init__(self, session: AsyncSession):
-        self.session = session
-
     async def get_for_login(self, login: str) -> DeclarativeBase:
         stmt = (select(self.model).
                 where(self.model.login==login))
@@ -29,3 +26,10 @@ class UserAlchemy(SQLAlchemyRepository):
                 returning(self.model.id))
         res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
+    
+    async def get_include_services(self, id: UUID) -> dict:
+        stmt = (select(self.model, self.model.services).
+                where(self.model.id==id).
+                join(self.model, self.model.services))
+        res = await self.session.execute(stmt)
+        return res.scalars().all()

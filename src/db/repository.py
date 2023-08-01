@@ -33,14 +33,14 @@ class SQLAlchemyRepository(Repository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, data: dict) -> DeclarativeBase:
+    async def create(self, data: dict) -> DeclarativeBase | None:
         stmt = (insert(self.model).
                 values(**data).
                 returning(self.model))
         res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
 
-    async def update(self, id: int, data: dict) -> DeclarativeBase:
+    async def update(self, id: int, data: dict) -> DeclarativeBase | None:
         stmt = (update(self.model).
                 where(self.model.id==id).
                 values(**data).
@@ -54,7 +54,7 @@ class SQLAlchemyRepository(Repository):
         res = await self.session.execute(stmt)
         return res.context.isdelete
 
-    async def get(self, id: int) -> DeclarativeBase:
+    async def get(self, id: int) -> DeclarativeBase | None:
         stmt = (select(self.model).
                 where(self.model.id==id))
         res = await self.session.execute(stmt)

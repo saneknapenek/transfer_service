@@ -29,4 +29,6 @@ class UserInDB(User):
     hashed_password: str
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/authentication")
+oauth2_scheme_accsess = OAuth2PasswordBearer(tokenUrl="/authentication")
+
+oauth2_scheme_refresh = OAuth2PasswordBearer(tokenUrl="/refresh")

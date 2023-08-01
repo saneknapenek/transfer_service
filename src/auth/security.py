@@ -3,83 +3,91 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import Depends
+from fastapi.responses import RedirectResponse
 from jose import JWTError, ExpiredSignatureError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .schemes import oauth2_scheme
+from .schemes import oauth2_scheme_accsess, oauth2_scheme_refresh
 from .hashing import Hasher
 from src.db.settings import get_db_session
 from src.db.repositories.user import UserAlchemy
 from src.db.repositories.token import TokenAlchemy
 from src.auth.env import ALGORITHM, SECRET_KEY
-from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_HOURS
-from src.auth.exceptions import credentials_exception, overdue_token_exception, check_used
+from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
+from src.auth.exceptions import credentials_exception, overdue_token_exception, check_used, used_token_exception
 
 
 
-async def authenticate_user(username: str, password: str, get_user):
-    user = await get_user(username)
+async def authenticate_user(username: str, password: str, session: AsyncSession):
+    user = await UserAlchemy(session).get_for_login(username)
     if not user:
-        return False
+        return None
     if not Hasher.verify_password(password, user.password):
-        return False
+        return None
     return user
 
 
-async def create_access_token(data: dict, expires_delta: timedelta | None = None):
+async def create_tokens(data: dict) -> dict:
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire,
-                      "typ": "a",
-                      "jti": str(uuid4())})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-async def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+    jti = str(uuid4())
+    expire = datetime.utcnow() + timedelta(minutes=int(REFRESH_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire,
                       "typ": "r",
-                      "jti": str(uuid4())})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+                      "jti": jti})
+    refresh_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    expire = datetime.utcnow() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode["typ"] = "a"
+    to_encode["exp"] = expire
+    access_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return {"access_token": access_jwt, "refresh_token": refresh_jwt, "token_type": "bearer"}
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: Annotated[AsyncSession, Depends(get_db_session)]):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme_accsess)], session: Annotated[AsyncSession, Depends(get_db_session)]):
     
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        if payload["typ"] == "r":
-            await check_used(token=token, session=session)
-            return replacement(user=username)
+        options = {"require_jti": True,
+                   "require_exp": True,
+                   "require_sub": True}
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM, options=options)
     except ExpiredSignatureError:
-        jti = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False})["jti"]
-        await TokenAlchemy(session).create({"token_id": jti})
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM, options={"verify_exp": False})
+        token_from_db = await TokenAlchemy(session).get(payload["jti"])
+        if token_from_db is None:
+            await TokenAlchemy(session).create({"id": payload["jti"]})
         raise overdue_token_exception
     except JWTError:
         raise credentials_exception
+    username = payload["sub"]
     user = await UserAlchemy(session=session).get_for_login(username)
     if user is None:
+        raise credentials_exception
+    if not await TokenAlchemy(session).get(payload["jti"]) is None:
+        raise credentials_exception
+    if payload["typ"] == "r":
         raise credentials_exception
     return user
 
 
-async def replacement(user: str):
-    data={"sub": user.username}
-    access_token = create_access_token(
-        data=data, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-    refresh_token = create_refresh_token(
-        data=data, expires_delta=REFRESH_TOKEN_EXPIRE_HOURS
-    )
-    return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
+async def replacement(refresh_token: Annotated[str, Depends(oauth2_scheme_refresh)], session: Annotated[AsyncSession, Depends(get_db_session)]):
+
+    try:
+        options = {"require_jti": True,
+                   "require_exp": True,
+                   "require_sub": True}
+        payload = jwt.decode(refresh_token, SECRET_KEY, ALGORITHM, options=options)
+    except ExpiredSignatureError:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM, options={"verify_exp": False})
+        await check_used(token=refresh_token, session=session)
+        if payload["typ"] == "r":
+            return RedirectResponse("/authentication")
+        raise overdue_token_exception
+    except JWTError:
+        raise credentials_exception
+    if payload["typ"] == "r":
+        await check_used(token=refresh_token, session=session)
+        username = payload["sub"]
+        if await UserAlchemy(session).get_for_login(username) is None:
+            raise credentials_exception
+        tokens = await create_tokens(data={"sub": username})
+        return tokens
+    raise overdue_token_exception

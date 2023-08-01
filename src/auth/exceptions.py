@@ -29,9 +29,9 @@ used_token_exception = HTTPException(
 )
 
 async def check_used(token: str, session: AsyncSession):
-    payload = jwt.decode(token=token, key=SECRET_KEY, algorithms=ALGORITHM)
-    res = await TokenAlchemy(session).get_for_token_id(payload["jti"])
-    if res.scalar_one_or_none() is None:
-        await TokenAlchemy(session).create({"token_id": str(uuid4())})
+    payload = jwt.decode(token=token, key=SECRET_KEY, algorithms=ALGORITHM, options={"verify_exp": False})
+    res = await TokenAlchemy(session).get(payload["jti"])
+    if res is None:
+        res = await TokenAlchemy(session).create({"id": payload["jti"]})
+    else:
         raise used_token_exception
-    return True

@@ -16,9 +16,3 @@ class TokenAlchemy(SQLAlchemyRepository):
 
     async def update(self, *args, **kwargs) -> DeclarativeBase:
         raise MethodNotAllowed
-    
-    async def get_for_token_id(self, token_id) -> Union[DeclarativeBase, None]:
-        stmt = (select(UsedTokens).
-                where(UsedTokens.token_id==token_id))
-        res = await self.session.execute(stmt)
-        return res.scalar_one_or_none()

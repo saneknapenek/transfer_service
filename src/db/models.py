@@ -82,5 +82,5 @@ class Service(Base):
 class UsedTokens(Base):
     __tablename__ = "used_tokens"
 
-    token_id: Mapped[str] = mapped_column(unique=True, nullable=False, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
     created: Mapped[datetime] = mapped_column(default=datetime.utcnow())

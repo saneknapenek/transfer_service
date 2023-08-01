@@ -13,8 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db_session
 from src.db.models import User
 
-from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_HOURS
-from src.auth.security import authenticate_user, create_access_token, create_refresh_token, get_current_user
+from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
+from src.auth.security import authenticate_user, get_current_user, replacement, create_tokens
 from src.auth.schemes import Token
 
 # from .actions import _create_user, _delete_user, _update_user, _get_user_by_email, _get_user_by_login
@@ -23,7 +23,7 @@ from .exceptions import UserNotFound
 
 
 
-user_router = APIRouter()
+user_router = APIRouter(tags=["user"])
 
 
 # @user_router.get("/", response_model=ResponseUserModel)
@@ -119,25 +119,21 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(get_db_session)]
 ):
-    get_user = UserAlchemy(session=session).get_for_login
-    user = await authenticate_user(form_data.username, form_data.password, get_user=get_user)
-    if not user:
+    user = await authenticate_user(form_data.username, form_data.password, session=session)
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = await create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    refresh_token_expires = timedelta(hours=REFRESH_TOKEN_EXPIRE_HOURS)
-    refresh_token = await create_refresh_token(
-        data={"sub": user.username}, expires_delta=refresh_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer", "refresh_token": refresh_token}
+    tokens = await create_tokens(data={"sub": user.username})
+    return tokens
 
-@auth_router.post("/registration")
+@auth_router.post("/registration", response_model=ResponseUserModel)
 async def registration(data: UserCreateRequest, session: Annotated[AsyncSession, Depends(get_db_session)]):
     result = await UserAlchemy(session=session).create(data=data.model_dump())
     return result.dict()
+
+@auth_router.post("/refresh")
+async def refresh_token(token=Depends(replacement)):
+    return token

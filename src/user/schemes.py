@@ -25,6 +25,7 @@ class BaseResponseModel(BaseModel):
 
 class ResponseUserModel(BaseResponseModel):
 
+    id: UUID
     login: str
     email: EmailStr
     name: str

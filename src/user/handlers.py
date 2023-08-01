@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Annotated
 from uuid import UUID
 
@@ -7,107 +6,92 @@ from fastapi import Depends
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+from pydantic import EmailStr, ValidationError
 
-from src.database import get_db_session
-from src.db.models import User
+from src.db.settings import get_db_session
+from src.db.models import User, ROLES
+from src.db.repositories.user import UserAlchemy
 
-from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
 from src.auth.security import authenticate_user, get_current_user, replacement, create_tokens
 from src.auth.schemes import Token
 
-# from .actions import _create_user, _delete_user, _update_user, _get_user_by_email, _get_user_by_login
-from .schemes import ResponseUserModel, RequestUser, UserCreateRequest, UserUpdateRequest, ResponseUserLogin
-from .exceptions import UserNotFound
+from src.user.schemes import ResponseUserModel, UserCreateRequest, UserUpdateRequest, Email, UserUpdateRole, ResponseUserExtended
+from src.user.exceptions import UserNotFound, NotEnoughRights, Unauthorized, UserDeactivate, UserAlreadyExists
 
 
 
 user_router = APIRouter(tags=["user"])
 
 
-# @user_router.get("/", response_model=ResponseUserModel)
-# async def get_user(username: RequestUser, session: AsyncSession = Depends(get_db_session)) -> ResponseUserModel:
-    
-#     if username.username.is_email():
-#         user = await _get_user_by_email(str, session)
-#     else:
-#         user = await _get_user_by_login(str, session)
-#     if user is None:
-#         raise UserNotFound
-#     return ResponseUserModel(
-#             login=user.login,
-#             name=user.name,
-#             email=user.email
-#         )
-
-# @user_router.post("/", response_model=ResponseUserModel)
-# async def create_user(body: UserCreateRequest, session: AsyncSession = Depends(get_db_session)) -> ResponseUserModel:
-
-#     try:
-#         user = await _create_user(body, session)
-#     except IntegrityError as exp:
-#         if "UniqueViolationError" in str(exp):
-#             raise HTTPException(
-#                 status_code=403, detail="User with this email already exists"
-#             )
-#         else:
-#             raise exp
-#     return ResponseUserModel(
-#             login=user.login,
-#             name=user.name,
-#             email=user.email
-#         )
-
-# @user_router.patch("/", response_model=ResponseUserModel)
-# async def update_user(login: LoginStr, body: UserUpdateRequest, session: AsyncSession = Depends(get_db_session)) -> ResponseUserModel:
-
-#     updating_params = body.dict(exclude_none=True)
-#     if not updating_params:
-#         raise HTTPException(
-#             status_code=422,
-#             detail="At least one parameter must be present"
-#         )
-#     updated_user = await _update_user(login, updating_params, session)
-#     if updated_user is None:
-#         raise UserNotFound
-#     return ResponseUserModel(
-#         login=updated_user.login,
-#         name=updated_user.name,
-#         email=updated_user.email
-#     )
-
-# @user_router.delete("/", response_model=ResponseUserLogin)
-# async def delete_user(login: LoginStr, session: AsyncSession = Depends(get_db_session)) -> ResponseUserLogin:
-
-#     deleted_user = await _delete_user(login, session)
-#     if deleted_user is None:
-#         raise UserNotFound
-#     return ResponseUserLogin(
-#         login=deleted_user
-#     )
-
-
-from src.db.repositories.user import UserAlchemy
-from src.user.schemes import UserCreateRequest
-
 @user_router.get("/", response_model=ResponseUserModel)
-async def get_user(id: str, session: Annotated[AsyncSession, Depends(get_db_session)],
+async def get_user(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)],
                    current_user: Annotated[User, Depends(get_current_user)]):
-    response = await UserAlchemy(session=session).get(current_user.id)
+    if current_user.role == ROLES.USER and id != current_user.id:
+        raise NotEnoughRights
+    response = await UserAlchemy(session=session).get(id)
+    if response is None:
+        raise UserNotFound
     return response.dict()
 
 @user_router.patch("/", response_model=ResponseUserModel)
-async def update_user(data: UserUpdateRequest,
+async def update_user(id: UUID, data: UserUpdateRequest,
                       session: Annotated[AsyncSession, Depends(get_db_session)],
                       current_user=Depends(get_current_user)):
-    response = await UserAlchemy(session=session).update(data=data.model_dump(exclude_none=True), id=current_user.id)
+    if current_user.role == ROLES.USER and id != current_user.id:
+        raise NotEnoughRights
+    if current_user.role == ROLES.SUPER_USER and current_user.id != id:
+        user = await UserAlchemy(session).get(id)
+        if response is None:
+            raise UserNotFound
+        if user.role in (ROLES.SUPER_USER, ROLES.ADMIN):
+            raise NotEnoughRights
+    response = await UserAlchemy(session=session).update(data=data.model_dump(exclude_none=True), id=id)
+    if response is None:
+        raise UserNotFound
     return response.dict()
 
 @user_router.delete("/", response_model=UUID)
-async def delete_user(session: Annotated[AsyncSession, Depends(get_db_session)],
+async def deactivate_user(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)],
                       current_user=Depends(get_current_user)):
-    response = await UserAlchemy(session=session).deactivate(current_user.id)
+    if current_user.role == ROLES.USER and id != current_user.id:
+        raise NotEnoughRights
+    if current_user.role == ROLES.SUPER_USER and id != current_user.id:
+        user = await UserAlchemy(session).get(id)
+        if user.role in (ROLES.SUPER_USER, ROLES.ADMIN):
+            raise NotEnoughRights
+    response = await UserAlchemy(session=session).deactivate(id)
+    if response is None:
+        raise UserNotFound
+    return response
+
+
+admin_router = APIRouter(prefix="/hidden", tags=["admin"])
+
+
+@admin_router.patch("/assign", response_model=ResponseUserExtended)
+async def assign_role(id: UUID,
+                      data: UserUpdateRole,
+                      session: Annotated[AsyncSession, Depends(get_db_session)],
+                      current_user=Depends(get_current_user)):
+    if current_user.role != ROLES.ADMIN:
+        raise NotEnoughRights
+    response = await UserAlchemy(session).update(id=id, data=data.model_dump())
+    return response.dict()
+
+@admin_router.delete("/delete", response_model=UUID)
+async def delete_user(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)],
+                      current_user=Depends(get_current_user)):
+    if current_user.role == ROLES.USER:
+        raise NotEnoughRights
+    if response is None:
+        raise UserNotFound
+    if current_user.role == ROLES.SUPER_USER:
+        user = await UserAlchemy(session).get(id)
+        if user.role is (ROLES.SUPER_USER, ROLES.ADMIN):
+            raise NotEnoughRights
+    response = await UserAlchemy(session).delete(id)
     return response
 
 
@@ -118,20 +102,25 @@ auth_router = APIRouter(tags=["auth"])
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(get_db_session)]
-):
-    user = await authenticate_user(form_data.username, form_data.password, session=session)
+):    
+    try:
+        email = Email(email=form_data.username).email
+        user = await authenticate_user(email=email, password=form_data.password, session=session)
+    except ValidationError:
+        user = await authenticate_user(username=form_data.username, password=form_data.password, session=session)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise Unauthorized
+    if not user.is_active:
+        raise UserDeactivate
     tokens = await create_tokens(data={"sub": user.username})
     return tokens
 
 @auth_router.post("/registration", response_model=ResponseUserModel)
 async def registration(data: UserCreateRequest, session: Annotated[AsyncSession, Depends(get_db_session)]):
-    result = await UserAlchemy(session=session).create(data=data.model_dump())
+    try:
+        result = await UserAlchemy(session=session).create(data=data.model_dump())
+    except IntegrityError:
+        raise UserAlreadyExists
     return result.dict()
 
 @auth_router.post("/refresh")

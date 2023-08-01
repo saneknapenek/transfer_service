@@ -7,20 +7,23 @@ from fastapi.responses import RedirectResponse
 from jose import JWTError, ExpiredSignatureError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .schemes import oauth2_scheme_accsess, oauth2_scheme_refresh
-from .hashing import Hasher
 from src.db.settings import get_db_session
 from src.db.repositories.user import UserAlchemy
 from src.db.repositories.token import TokenAlchemy
-from src.auth.env import ALGORITHM, SECRET_KEY
-from src.auth.env import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
-from src.auth.exceptions import credentials_exception, overdue_token_exception, check_used, used_token_exception
+
+from src.auth.env import ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
+from src.auth.exceptions import credentials_exception, overdue_token_exception, check_used
+from src.auth.schemes import oauth2_scheme_accsess, oauth2_scheme_refresh
+from src.auth.hashing import Hasher
 
 
 
-async def authenticate_user(username: str, password: str, session: AsyncSession):
-    user = await UserAlchemy(session).get_for_login(username)
-    if not user:
+async def authenticate_user(password: str, session: AsyncSession, username: str | None = None, email: str | None = None):
+    if username is None:
+        user = await UserAlchemy(session).get_for_email(email)
+    else:
+        user = await UserAlchemy(session).get_for_login(username)
+    if user is None:
         return None
     if not Hasher.verify_password(password, user.password):
         return None

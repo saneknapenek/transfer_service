@@ -1,12 +1,14 @@
-from uuid import UUID
-from typing import Optional, Union
 import re
+from uuid import UUID
+from typing import Optional
+from enum import Enum
 
 from fastapi.exceptions import HTTPException
-from pydantic import BaseModel, EmailStr, field_validator
-from pydantic import constr
+from pydantic import BaseModel, EmailStr, field_validator, constr
 
 from src.auth.hashing import Hasher
+
+from src.db.models import ROLES
 
 
 
@@ -31,18 +33,14 @@ class ResponseUserModel(BaseResponseModel):
     name: str
 
 
-class ResponseUserLogin(BaseResponseModel):
+class ResponseUserExtended(ResponseUserModel):
 
-    login: str
+    role: ROLES
 
 
-class RequestUser(BaseModel):
+class Email(BaseModel):
 
-    username: Union[str, EmailStr]
-
-    @property
-    def is_email(self):
-        return type(self.username) is EmailStr
+    email: EmailStr
 
 
 class UserUpdateRequest(BaseModel):
@@ -103,3 +101,8 @@ class UserCreateRequest(UserUpdateRequest):
             )
         hashed_password = Hasher.get_password_hash(value)
         return hashed_password
+
+
+class UserUpdateRole(BaseModel):
+
+    role: ROLES

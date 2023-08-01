@@ -39,7 +39,8 @@ class Unauthorized(HTTPException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"})
+            headers={"WWW-Authenticate": "Bearer"}
+        )
 
 
 class UserAlreadyExists(HTTPException):
@@ -48,4 +49,25 @@ class UserAlreadyExists(HTTPException):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
             detail="A user with the same username or email already exists.",
-            headers=None)
+            headers=None
+        )
+        
+
+class IncorrectPassword(HTTPException):
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect old password",
+            headers=None
+        )
+        
+
+class MatchingPasswords(HTTPException):
+
+    def __init__(self) -> None:
+        super().__init__(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Old and new password must not match",
+            headers=None
+        )

@@ -1,9 +1,10 @@
 import re
 from uuid import UUID
-from typing import Optional
+from typing import Optional, Annotated
 from enum import Enum
 
 from fastapi.exceptions import HTTPException
+from fastapi.param_functions import Form
 from pydantic import BaseModel, EmailStr, field_validator, constr
 
 from src.auth.hashing import Hasher
@@ -43,6 +44,31 @@ class Email(BaseModel):
     email: EmailStr
 
 
+class Password(BaseModel):
+
+    password: str
+
+    @field_validator("password")
+    def validate_password(cls, value):
+        if not PATTERN_FOR_PASSWORD_NUMBER.search(value):
+            raise HTTPException(
+                status_code=422, detail="String contains at least one number"
+            )
+        if not PATTERN_FOR_PASSWORD_LOWWER.search(value):
+            raise HTTPException(
+                status_code=422, detail="String contains at least one lowercase Latin letter"
+            )
+        if not PATTERN_FOR_PASSWORD_UPPER.search(value):
+            raise HTTPException(
+                status_code=422, detail="String contains at least one uppercase Latin letter"
+            )
+        if len(value) < 8:
+            raise HTTPException(
+                status_code=422, detail="Password must contain at least eight characters"
+            )
+        hashed_password = Hasher.get_password_hash(value)
+        return hashed_password
+
 class UserUpdateRequest(BaseModel):
     
     login: Optional[str]
@@ -74,33 +100,11 @@ class UserUpdateRequest(BaseModel):
         return value
 
 
-class UserCreateRequest(UserUpdateRequest):
+class UserCreateRequest(UserUpdateRequest, Password):
 
     login: str
     name: constr(min_length=1)
     email: EmailStr
-    password: str
-
-    @field_validator("password")
-    def validate_password(cls, value):
-        if not PATTERN_FOR_PASSWORD_NUMBER.search(value):
-            raise HTTPException(
-                status_code=422, detail="String contains at least one number"
-            )
-        if not PATTERN_FOR_PASSWORD_LOWWER.search(value):
-            raise HTTPException(
-                status_code=422, detail="String contains at least one lowercase Latin letter"
-            )
-        if not PATTERN_FOR_PASSWORD_UPPER.search(value):
-            raise HTTPException(
-                status_code=422, detail="String contains at least one uppercase Latin letter"
-            )
-        if len(value) < 8:
-            raise HTTPException(
-                status_code=422, detail="Password must contain at least eight characters"
-            )
-        hashed_password = Hasher.get_password_hash(value)
-        return hashed_password
 
 
 class UserUpdateRole(BaseModel):

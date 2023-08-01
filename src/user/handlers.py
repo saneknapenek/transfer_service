@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import status
+from fastapi import Form
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,8 +18,12 @@ from src.db.repositories.user import UserAlchemy
 from src.auth.security import authenticate_user, get_current_user, replacement, create_tokens
 from src.auth.schemes import Token
 
-from src.user.schemes import ResponseUserModel, UserCreateRequest, UserUpdateRequest, Email, UserUpdateRole, ResponseUserExtended
-from src.user.exceptions import UserNotFound, NotEnoughRights, Unauthorized, UserDeactivate, UserAlreadyExists
+from src.user.schemes import (ResponseUserModel, UserCreateRequest,
+                              UserUpdateRequest, Email, UserUpdateRole,
+                              ResponseUserExtended, Password)
+from src.user.exceptions import (UserNotFound, NotEnoughRights, Unauthorized,
+                                 UserDeactivate, UserAlreadyExists, IncorrectPassword,
+                                 MatchingPasswords)
 
 
 
@@ -53,8 +58,9 @@ async def update_user(id: UUID, data: UserUpdateRequest,
     return response.dict()
 
 @user_router.delete("/", response_model=UUID)
-async def deactivate_user(id: UUID, session: Annotated[AsyncSession, Depends(get_db_session)],
-                      current_user=Depends(get_current_user)):
+async def deactivate_user(id: UUID,
+                          session: Annotated[AsyncSession, Depends(get_db_session)],
+                          current_user=Depends(get_current_user)):
     if current_user.role == ROLES.USER and id != current_user.id:
         raise NotEnoughRights
     if current_user.role == ROLES.SUPER_USER and id != current_user.id:
@@ -65,6 +71,20 @@ async def deactivate_user(id: UUID, session: Annotated[AsyncSession, Depends(get
     if response is None:
         raise UserNotFound
     return response
+
+@user_router.patch("/password", response_model=ResponseUserModel)
+async def change_password(old_password: Annotated[str, Form()],
+                          new_password: Annotated[str, Form()],
+                          session: Annotated[AsyncSession, Depends(get_db_session)],
+                          current_user=Depends(get_current_user)):
+    if old_password == new_password:
+        raise MatchingPasswords
+    new_password = Password(password=new_password).password
+    user = await authenticate_user(password=old_password, session=session, username=current_user.username)
+    if user is None:
+        raise IncorrectPassword
+    response = await UserAlchemy(session).update(id=current_user.id, data={"password": new_password})
+    return response.dict()
 
 
 admin_router = APIRouter(prefix="/hidden", tags=["admin"])

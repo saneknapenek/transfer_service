@@ -3,9 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter
 from fastapi import Depends
-from fastapi import status
 from fastapi import Form
-from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -146,3 +144,7 @@ async def registration(data: UserCreateRequest, session: Annotated[AsyncSession,
 @auth_router.post("/refresh")
 async def refresh_token(token=Depends(replacement)):
     return token
+
+@auth_router.post("/currentuser", response_model=ResponseUserExtended)
+async def get_current_user(current_user=Depends(get_current_user)):
+    return current_user

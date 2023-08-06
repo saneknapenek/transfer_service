@@ -7,9 +7,9 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Form
 from pydantic import BaseModel, EmailStr, field_validator, constr
 
-from src.auth.hashing import Hasher
+from auth.hashing import Hasher
 
-from src.db.models import ROLES
+from db.models import ROLES
 
 
 

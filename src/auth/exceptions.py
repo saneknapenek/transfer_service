@@ -5,8 +5,8 @@ from fastapi import status
 from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.env import ALGORITHM, SECRET_KEY
-from src.db.repositories.token import TokenAlchemy
+from auth.env import ALGORITHM, SECRET_KEY
+from db.repositories.token import TokenAlchemy
 
 
 

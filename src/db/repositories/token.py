@@ -4,9 +4,9 @@ from typing import Union
 from sqlalchemy import select, update
 from sqlalchemy.orm import DeclarativeBase
 
-from src.db.models import UsedTokens
-from src.db.repository import SQLAlchemyRepository
-from src.db.exceptions import MethodNotAllowed
+from db.models import UsedTokens
+from db.repository import SQLAlchemyRepository
+from db.exceptions import MethodNotAllowed
 
 
 

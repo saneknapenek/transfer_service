@@ -3,8 +3,8 @@ from uuid import UUID
 from sqlalchemy import select, update
 from sqlalchemy.orm import DeclarativeBase
 
-from src.db.models import User
-from src.db.repository import SQLAlchemyRepository
+from db.models import User
+from db.repository import SQLAlchemyRepository
 
 
 

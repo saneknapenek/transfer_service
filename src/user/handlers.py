@@ -9,19 +9,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from pydantic import EmailStr, ValidationError
 
-from src.db.settings import get_db_session
-from src.db.models import User, ROLES
-from src.db.repositories.user import UserAlchemy
+from db.settings import get_db_session
+from db.models import User, ROLES
+from db.repositories.user import UserAlchemy
 
-from src.auth.security import authenticate_user, get_current_user, replacement, create_tokens
-from src.auth.schemes import Token
+from auth.security import authenticate_user, get_current_user, replacement, create_tokens
+from auth.schemes import Token
 
-from src.user.schemes import (ResponseUserModel, UserCreateRequest,
-                              UserUpdateRequest, Email, UserUpdateRole,
-                              ResponseUserExtended, Password)
-from src.user.exceptions import (UserNotFound, NotEnoughRights, Unauthorized,
-                                 UserDeactivate, UserAlreadyExists, IncorrectPassword,
-                                 MatchingPasswords)
+from user.schemes import (ResponseUserModel, UserCreateRequest,
+                          UserUpdateRequest, Email, UserUpdateRole,
+                          ResponseUserExtended, Password)
+from user.exceptions import (UserNotFound, NotEnoughRights, Unauthorized,
+                             UserDeactivate, UserAlreadyExists, IncorrectPassword,
+                             MatchingPasswords)
 
 
 

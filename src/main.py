@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi import APIRouter
 
-from .user.handlers import user_router
-from .user.handlers import auth_router
-from .user.handlers import admin_router
+from user.handlers import user_router
+from user.handlers import auth_router
+from user.handlers import admin_router
 
 
 

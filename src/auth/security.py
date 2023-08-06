@@ -7,14 +7,14 @@ from fastapi.responses import RedirectResponse
 from jose import JWTError, ExpiredSignatureError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.settings import get_db_session
-from src.db.repositories.user import UserAlchemy
-from src.db.repositories.token import TokenAlchemy
+from db.settings import get_db_session
+from db.repositories.user import UserAlchemy
+from db.repositories.token import TokenAlchemy
 
-from src.auth.env import ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
-from src.auth.exceptions import credentials_exception, overdue_token_exception, check_used
-from src.auth.schemes import oauth2_scheme_accsess, oauth2_scheme_refresh
-from src.auth.hashing import Hasher
+from auth.env import ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
+from auth.exceptions import credentials_exception, overdue_token_exception, check_used
+from auth.schemes import oauth2_scheme_accsess, oauth2_scheme_refresh
+from auth.hashing import Hasher
 
 
 

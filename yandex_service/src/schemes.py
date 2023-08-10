@@ -16,8 +16,6 @@ class ObjectFromDisk(BaseModel):
 
     created_on_service: datetime
     modified_on_service: datetime
-    gps_latitude: float | None
-    gps_longitude: float | None
     link_for_downloading: str
 
     @field_validator("created_on_service", "modified_on_service", mode='before')
@@ -26,10 +24,6 @@ class ObjectFromDisk(BaseModel):
         str_time = val[11:19:1].split(":")
         date_time = datetime(int(str_date[0]), int(str_date[1]), int(str_date[2]), int(str_time[0]), int(str_time[1]), int(str_time[2]))
         return date_time
-    
-    @field_validator("gps_latitude", "gps_longitude", mode="before")
-    def validate_coordinates(cls, val):
-        return float(val)
 
 
 class InitObjectFromDisk(ObjectFromDisk):
@@ -47,16 +41,10 @@ class InitObjectFromDisk(ObjectFromDisk):
             return datetime(int(str_date[0]), int(str_date[1]), int(str_date[2]),
                             int(str_time[0]), int(str_time[1]), int(str_time[2]))
         return val
-        
-
-class ObjectToInitialize(ObjectFromDisk):
-    id_tasks_for_download: str
 
 
-# class InitRequest(BaseModel):
-#     objects: list[ObjectToInitialize]
-#     quantity: int
-#     service: str = Field(default="yandex")
+# class ObjectToInitialize(ObjectFromDisk):
+#     id_tasks_for_download: str
 
 
 class ListObjects(BaseModel):

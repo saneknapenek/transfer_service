@@ -6,8 +6,10 @@ from fastapi import Depends, APIRouter, status, Response, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient
+from celery.result import AsyncResult
 
 from utils.yrequests.auth_yandex import AsyncClientYandex
+from tasks.tasks import clr
 
 from schemes import ListNames
 
@@ -117,25 +119,27 @@ async def get_init_objects(quantity_on_page: int, page: int):
 async def delete_init_objcets(body: ListNames):
     pass
 
-from datetime import datetime
 @service_router.get("/init")
-async def init_disk(session: AsyncClientYandex = Depends(get_client_session)):
-    start_time = datetime.now()
-    res = await disk_initialization(session=session)
-    range_time = datetime.now() - start_time
-    # return status.HTTP_202_ACCEPTED
-    return {"time": range_time,
-            "res": res}
+async def init_disk(session: AsyncClientYandex = Depends(get_client_session)) -> dict:
+    task_id = await disk_initialization(session=session)
+    return {"initialization_id": task_id}
 
 @service_router.get("/init/{id}")
-async def check_init(id: int) -> bool:
-    pass
+async def check_init(id: str):
+    res = AsyncResult(id=id, app=clr)
+    if res.ready():
+        if res.successful():
+            msg =  "Initialization completed successfully"
+        else:
+            msg =  "Initialization error"
+    else:
+        msg = "Initialization did not complete"
+    return Response(content=msg)
+
+test_router = APIRouter(tags=["test"])
 
 
-test_router = APIRouter(tags=["test",])
-
-
-@test_router.get("/test")
+@test_router.get("/current_user")
 async def test(current_user=Depends(get_current_user)):
     return current_user
 

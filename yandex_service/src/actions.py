@@ -1,8 +1,11 @@
 import enum
 
-from schemes import ObjectFromDisk, ObjectToInitialize, ListObjects
+from celery.result import AsyncResult
+
+from schemes import ObjectFromDisk, ListObjects
 from utils.yrequests.requests import YRequests, SyncDownloader
 from utils.yrequests.auth_yandex import AsyncClientYandex, ClientYandex
+from tasks.tasks import clr
 from tasks.tasks import task_initialization
 
 
@@ -44,29 +47,10 @@ async def get_all_objects(session: AsyncClientYandex) -> dict[list, int]:
     )
     return {"objects": all_objects["_embedded"]["items"], "quantity": total_quantity}
 
-
-from celery.result import AsyncResult
-from tasks.tasks import clr
 async def disk_initialization(session: AsyncClientYandex) -> dict[list, int]:
     all_objects = await get_all_objects(session=session)
-
     task = task_initialization.delay(params_session=session.custom_params,
                               objects=all_objects["objects"],
-                              quantity=all_objects["quantity"],
-                              user={"user": 1})
-
-    # res = AsyncResult(task.id, app=clr)
-
-    # if res.ready():
-    # # Задача выполнена
-    #     if res.successful():
-    #         res_value = res.result
-    #     else:
-    #         # Задача выполнена с ошибкой
-
-    #         res_value = res.result
-
-    # while not res.ready():
-    #     pass
-    # return res.result
-    return 1
+                              user={"id": session.user["id"],
+                                    "service": {"id": str(session.user["service"].id)}})
+    return task.id

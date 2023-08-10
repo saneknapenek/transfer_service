@@ -101,7 +101,7 @@ class YRequests:
             except FileExistsError:
                 pass
         
-        if response.status_code != status.HTTP_200_OK:
+        if response.status_code != status.HTTP_200_OK and response.status_code != status.HTTP_302_FOUND:
             raise HTTPException(status_code=response.status_code,
                                 detail=response.json())
         if response.headers["content-type"] == "application/octet-stream":
@@ -160,4 +160,4 @@ class SyncDownloader:
                 url=response.headers["location"]
             )
         
-        return base64.b64encode(response.content)
+        return response.content

@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "service-google"
+version = "0.1.0"
+description = ""
+authors = ["saneknapenek <kolesnikovag22@gmail.com>"]
+readme = "README.md"
+packages = [{include = "service_google"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.100.0"
+httpx = "^0.24.1"
+uvicorn = "^0.22.0"
+
+
+[tool.poetry.group.dev.dependencies]
+requests = "^2.31.0"
+environs = "^9.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,13 +1,13 @@
-from fastapi import FastAPI, Depends, status
+from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 from httpx import AsyncClient
-from pydantic import BaseModel
-from environs import Env
 from urllib.parse import urlencode
 
 from env import AUTH_URI, CLIENT_ID, REDIRECT_URI_CALLBACK, REDIRECT_URI_TOKEN, TOKEN_URI, CLIENT_SECRET
 
-app = FastAPI()
+
+
+router = APIRouter()
 
 
 TOKEN = ...
@@ -21,13 +21,13 @@ async def get_client_session() -> AsyncClient:
         await client.aclose()
 
 
-@app.get("/include", response_class=RedirectResponse)
+@router.get("/include", response_class=RedirectResponse)
 async def include_google():
     url = f"{AUTH_URI}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI_CALLBACK}&scope=https://www.googleapis.com/auth/photoslibrary&response_type=code&access_type=offline"
     return url
 
 
-@app.get("/callback")
+@router.get("/callback")
 async def auth(code: str, scope: str):
     print(code)
     async with AsyncClient() as session:

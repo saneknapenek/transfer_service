@@ -16,7 +16,7 @@ from schemes import ListNames
 from actions import (get_object_for_path, get_objects_for_page, get_link_for_download,
                      delete_object_for_name, get_all_objects, disk_initialization)
 
-from env import URL_SYNC_HANDLER, CLIENT_ID, CLIENT_SECRET
+from env import CLIENT_ID, CLIENT_SECRET
 
 from auth.security import get_current_user, get_client_session
 

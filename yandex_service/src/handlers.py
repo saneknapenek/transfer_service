@@ -28,7 +28,7 @@ from db.models import SERVICES
 yandex_auth = APIRouter(tags=["auth"])
 
 
-@yandex_auth.get("/include")
+@yandex_auth.get("/include")  #in auth
 async def include_service(code: str = "",
                           current_user = Depends(get_current_user),
                           db_session: AsyncSession = Depends(get_db_session)):
@@ -69,7 +69,7 @@ async def include_service(code: str = "",
                 await service_db.create(data=data)
             return status.HTTP_200_OK
     
-@yandex_auth.get("/exclude")
+@yandex_auth.get("/exclude")  #in auth
 async def exclude_service(current_user=Depends(get_current_user),
                           db_session: AsyncSession = Depends(get_db_session)):
     await ServiceAlchemy(db_session).delete_for_user(name=SERVICES.YANDEX.value,

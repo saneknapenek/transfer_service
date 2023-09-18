@@ -4,7 +4,7 @@ from celery import Celery
 from celery.result import AsyncResult
 from httpx import ReadTimeout
 
-from utils.yrequests.requests import SyncDownloader
+from utils.yrequests.requests import SyncDelete, SyncDownloader
 from utils.yrequests.auth_yandex import ClientYandex
 from schemes import ObjectFromDisk
 from env import CELERY_BACKEND, CELERY_BROKER
@@ -56,7 +56,12 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
                 service_id=user["service"]["id"]
             )
             db_session.add(new_media)
-            db_session.commit()
+            db_session.commit()    #if
+
+        response = SyncDelete(session).delete(path=obj["name"],
+                                              permanently=True)
+        #?
+
 
 @clr.task
 def task_initialization(params_session: dict, objects: list, user: dict):

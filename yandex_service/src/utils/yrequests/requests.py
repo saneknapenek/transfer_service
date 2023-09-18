@@ -161,3 +161,63 @@ class SyncDownloader:
             )
         
         return response.content
+    
+
+class SyncDelete:
+
+    def __init__(self, session: ClientYandex) -> None:
+        self.session = session
+        self.root_directory = session.root_directory.strip('/')
+        self.base_url = str(session.base_url).strip('/')
+
+    def delete(self, path: str, permanently: bool = False, fields: tuple = None) -> dict | HTTPException:
+        request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}&permanently={permanently}"
+        if not fields is None:  #?
+            request_url = request_url + "&fields" + str(fields)
+        response = self.session.delete(
+            url=request_url,
+        )
+        if response.status_code == status.HTTP_204_NO_CONTENT:
+            return {"content": {"message": "Success"},
+                    "status_code": status.HTTP_200_OK}
+        else:
+            return {"status_code": response.status_code,
+                    "detail": response.json()}
+
+
+class SyncYRequests:
+
+    def __init__(self, session: AsyncClientYandex) -> None:
+        self.session = session
+        self.root_directory = session.root_directory.strip('/')
+        self.base_url = str(session.base_url).strip('/')
+
+    def download(self, link: str) -> bytes:
+
+        response = self.session.get(
+            url=link
+        )
+        
+        if response.headers["content-type"] == "application/octet-stream":
+            response = self.session.get(
+                url=response.headers["location"]
+            )
+        
+        return response.content
+    
+    def delete(self, path: str, permanently: bool = False, fields: tuple = None) -> dict:
+        request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}&permanently={permanently}"
+        if not fields is None:  #?
+            request_url = request_url + "&fields" + str(fields)
+        response = self.session.delete(
+            url=request_url,
+        )
+        if response.status_code == status.HTTP_204_NO_CONTENT:
+            return {"content": {"message": "Success"},
+                    "status_code": status.HTTP_200_OK}
+        else:
+            return {"status_code": response.status_code,
+                    "detail": response.json()}
+        
+    def upload():   #?
+        pass

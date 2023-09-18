@@ -11,16 +11,18 @@ from db.settings import get_db_session
 from db.repositories.service import ServiceAlchemy
 from db.models import SERVICES
 from utils.yrequests.auth_yandex import AsyncClientYandex
+from env import (MAIN_HOST, MAIN_PORT,
+                 YANDEX_HOST, YANDEX_PORT)
 
 
 
-oauth2_scheme_accsess = OAuth2PasswordBearer(tokenUrl="http://127.0.0.1:8000/authentication")
+oauth2_scheme_accsess = OAuth2PasswordBearer(tokenUrl=f"http://{MAIN_HOST}:{MAIN_PORT}/authentication")
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme_accsess)],
                            session: Annotated[AsyncSession, Depends(get_db_session)]) -> dict:
     
     async with AsyncClient(headers={"Authorization": f"Bearer {token}"}) as client:
-        response = await client.post(url="http://127.0.0.1:8000/currentuser")
+        response = await client.post(url=f"http://{MAIN_HOST}:{MAIN_PORT}/currentuser")
         if response.status_code != status.HTTP_200_OK:
             raise HTTPException(status_code=response.status_code,
                                 headers=response.headers,
@@ -28,7 +30,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme_accsess)]
         user = response.json()
         service = await ServiceAlchemy(session).get_for_user(name=SERVICES.YANDEX.value, user_id=user["id"])
         if service is None:
-            return RedirectResponse("http://127.0.0.1:8001/include")
+            return RedirectResponse(f"http://{YANDEX_HOST}:{YANDEX_PORT}/include")
         user["service"] = service
         return user
 

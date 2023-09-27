@@ -3,7 +3,8 @@ from environs import Env
 
 
 env = Env()
-env.read_env()
+env.read_env(path="/main_service/settings.env")
+env.read_env(path="/main_service/.env")
 
 POSTGRESE_USER = env('POSTGRESE_USER')
 POSTGRESE_PASSWORD = env('POSTGRESE_PASSWORD')

@@ -3,7 +3,8 @@ from environs import Env
 
 
 env = Env()
-env.read_env()
+env.read_env(path="/yandex_service/settings.env")
+env.read_env(path="/yandex_service/.env")
 
 CLIENT_ID = env('CLIENT_ID')
 CLIENT_SECRET = env('CLIENT_SECRET')

@@ -12,7 +12,7 @@ class Media(ABC):
     DATETIME = ...
 
     def __init__(self, obj: bytes):
-        self.obj = io.BytesIO(obj)
+        self.__obj = io.BytesIO(obj)
 
     @abstractmethod
     def _get_metadata(self) -> dict:
@@ -24,11 +24,19 @@ class Media(ABC):
     
     @property
     def hash(self):
-        return self._get_hash()
-    
+        if f"_{self.__class__.__name__}__hash" in self.__dict__:
+            return self.__hash
+        else:
+            self.__hash = self._get_hash()
+            return self.__hash
+
     @property
     def metadata(self):
-        return self._get_metadata()
+        if f"_{self.__class__.__name__}__metadata" in self.__dict__:
+            return self.__metadata
+        else:
+            self.__metadata = self._get_metadata()
+            return self.__metadata
 
 
 class SImage(Media):
@@ -37,12 +45,12 @@ class SImage(Media):
     DATETIME = 306
 
     def _get_hash(self) -> str:
-        image = Image.open(self.obj)
+        image = Image.open(self.__obj)
         hash = imagehash.average_hash(image)
         return str(hash)
     
     def _get_metadata(self) -> dict:
-        img = Image.open(self.obj)
+        img = Image.open(self.__obj)
         exif_data = img._getexif()
         try:
             gps = exif_data[self.GPSINFO]
@@ -63,7 +71,7 @@ class SImage(Media):
 class SVideo(Media):
     
     def _get_hash(self) -> str:
-        return super().get_hash()
+        return super()._get_hash()
     
     def _get_metadata(self) -> dict:
-        return super().get_metadata()
+        return super()._get_metadata()

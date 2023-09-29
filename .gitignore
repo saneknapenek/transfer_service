@@ -4,3 +4,4 @@ alembic.ini
 /migrations
 **draft*
 .env
+requirements.txt

@@ -1,12 +1,9 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
-
-RUN curl -sSL https://install.python-poetry.org | python3 -
+FROM python:3.11.5-alpine3.18
 
 COPY ./ /main_service
 
 WORKDIR /main_service
 
-RUN ~/.local/share/pypoetry/venv/bin/poetry config virtualenvs.create false
-RUN ~/.local/share/pypoetry/venv/bin/poetry update
+RUN pip install -r requirements.txt
 
 EXPOSE 8000

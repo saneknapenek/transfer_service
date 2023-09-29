@@ -11,8 +11,7 @@ from db.settings import get_db_session
 from db.repositories.service import ServiceAlchemy
 from db.models import SERVICES
 from utils.yrequests.auth_yandex import AsyncClientYandex
-from env import (MAIN_HOST, MAIN_PORT,
-                 YANDEX_HOST, YANDEX_PORT)
+from env import (HOST, MAIN_HOST, MAIN_PORT, YANDEX_PORT)
 
 
 
@@ -30,7 +29,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme_accsess)]
         user = response.json()
         service = await ServiceAlchemy(session).get_for_user(name=SERVICES.YANDEX.value, user_id=user["id"])
         if service is None:
-            return RedirectResponse(f"http://{YANDEX_HOST}:{YANDEX_PORT}/include")
+            return RedirectResponse(f"http://{HOST}:{YANDEX_PORT}/yandex/include")
         user["service"] = service
         return user
 

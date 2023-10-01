@@ -5,6 +5,8 @@ services:
 
     build: ./main_service
 
+    image: saneknapenek/transfer_service_main_service:latest
+
     container_name: main_s
 
     restart: unless-stopped
@@ -41,6 +43,8 @@ services:
   yandex_service:
 
     build: ./yandex_service
+
+    image: saneknapenek/transfer_service_yandex_service:latest
 
     container_name: yandex_s
 

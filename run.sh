@@ -10,7 +10,7 @@ cd ./yandex_service
 poetry export -f requirements.txt --output requirements.txt
 
 docker network create tr_net
-docker-compose up
+docker compose up
 
 #yandex service
 rm requirements.txt

@@ -2,7 +2,7 @@ import base64
 import json
 from typing import Annotated
 
-from fastapi import Depends, APIRouter, status, Response, Request
+from fastapi import Depends, APIRouter, status, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient
@@ -134,6 +134,7 @@ async def check_init(id: str):
             msg =  "Initialization error"
     else:
         msg = "Initialization did not complete"
+    res.forget()
     return Response(content=msg)
 
 test_router = APIRouter(tags=["test"])

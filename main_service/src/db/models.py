@@ -1,11 +1,9 @@
-from typing import Any
 import uuid
 import enum
 from datetime import datetime
 
 
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Enum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import String, ForeignKey, Enum
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 from sqlalchemy import inspect
 from sqlalchemy.orm import ColumnProperty

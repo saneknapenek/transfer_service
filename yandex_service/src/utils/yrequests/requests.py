@@ -1,7 +1,6 @@
 from json import dumps
 from datetime import datetime
 import os
-import base64
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -42,7 +41,7 @@ class YRequests:
         Add custom meta information to a file or folder on disk.
         """
         request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}"
-        if not fields is None:
+        if fields is not None:
             request_url = request_url + "&fields" + str(fields)
         response = await self.session.patch(
             url=request_url,
@@ -60,7 +59,7 @@ class YRequests:
         Delete a file or folder on a disk.
         """
         request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}&permanently={permanently}"
-        if not fields is None:
+        if fields is not None:
             request_url = request_url + "&fields" + str(fields)
         response = await self.session.delete(
             url=request_url,
@@ -119,7 +118,7 @@ class YRequests:
         request_url = f"{self.base_url}/upload/?path=/{self.root_directory}/{name_on_disk}"
         if overwrite is True:
             request_url += "&overwrite=true"
-        if not fields is None:
+        if fields is not None:
             request_url = request_url + "&fields" + str(fields)
         
         response = await self.session.get(
@@ -172,7 +171,7 @@ class SyncDelete:
 
     def delete(self, path: str, permanently: bool = False, fields: tuple = None) -> dict | HTTPException:
         request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}&permanently={permanently}"
-        if not fields is None:  #?
+        if fields is not None:  #?
             request_url = request_url + "&fields" + str(fields)
         response = self.session.delete(
             url=request_url,
@@ -207,7 +206,7 @@ class SyncYRequests:
     
     def delete(self, path: str, permanently: bool = False, fields: tuple = None) -> dict:
         request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}&permanently={permanently}"
-        if not fields is None:  #?
+        if fields is not None:  #?
             request_url = request_url + "&fields" + str(fields)
         response = self.session.delete(
             url=request_url,

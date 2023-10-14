@@ -1,11 +1,5 @@
-import enum
-
-from celery.result import AsyncResult
-
-from schemes import ObjectFromDisk, ListObjects
-from utils.yrequests.requests import YRequests, SyncDownloader
-from utils.yrequests.auth_yandex import AsyncClientYandex, ClientYandex
-from tasks.tasks import clr
+from utils.yrequests.requests import YRequests
+from utils.yrequests.auth_yandex import AsyncClientYandex
 from tasks.tasks import task_initialization
 
 

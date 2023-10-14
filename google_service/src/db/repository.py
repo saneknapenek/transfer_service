@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import insert, select, update, delete
-from sqlalchemy.engine import CursorResult
 
 
 

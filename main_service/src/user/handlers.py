@@ -1,29 +1,39 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import Form
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
-from pydantic import EmailStr, ValidationError
-
-from db.settings import get_db_session
-from db.models import User, ROLES
-from db.repositories.user import UserAlchemy
-
-from auth.security import authenticate_user, get_current_user, replacement, create_tokens
 from auth.schemes import Token
-
-from user.schemes import (ResponseUserModel, UserCreateRequest,
-                          UserUpdateRequest, Email, UserUpdateRole,
-                          ResponseUserExtended, Password)
-from user.exceptions import (UserNotFound, NotEnoughRights, Unauthorized,
-                             UserDeactivate, UserAlreadyExists, IncorrectPassword,
-                             MatchingPasswords)
-
-
+from auth.security import (
+    authenticate_user,
+    create_tokens,
+    get_current_user,
+    replacement,
+)
+from db.models import ROLES, User
+from db.repositories.user import UserAlchemy
+from db.settings import get_db_session
+from fastapi import APIRouter, Depends, Form
+from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from user.exceptions import (
+    IncorrectPassword,
+    MatchingPasswords,
+    NotEnoughRights,
+    Unauthorized,
+    UserAlreadyExists,
+    UserDeactivate,
+    UserNotFound,
+)
+from user.schemes import (
+    Email,
+    Password,
+    ResponseUserExtended,
+    ResponseUserModel,
+    UserCreateRequest,
+    UserUpdateRequest,
+    UserUpdateRole,
+)
 
 user_router = APIRouter(tags=["user"])
 
@@ -46,7 +56,7 @@ async def update_user(id: UUID, data: UserUpdateRequest,
         raise NotEnoughRights
     if current_user.role == ROLES.SUPER_USER and current_user.id != id:
         user = await UserAlchemy(session).get(id)
-        if response is None:
+        if user is None:
             raise UserNotFound
         if user.role in (ROLES.SUPER_USER, ROLES.ADMIN):
             raise NotEnoughRights

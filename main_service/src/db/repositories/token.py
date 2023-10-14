@@ -1,7 +1,3 @@
-from uuid import UUID
-from typing import Union
-
-from sqlalchemy import select, update
 from sqlalchemy.orm import DeclarativeBase
 
 from db.models import UsedTokens

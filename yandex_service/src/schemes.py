@@ -1,7 +1,6 @@
-from datetime import date, datetime, time
-from typing_extensions import Unpack
+from datetime import datetime
 
-from pydantic import BaseModel, Base64Bytes, Field
+from pydantic import BaseModel
 from pydantic import field_validator
 
 
@@ -35,7 +34,7 @@ class InitObjectFromDisk(ObjectFromDisk):
 
     @field_validator("datetime_created", mode="before")
     def validate_datetime_created(cls, val: datetime | str): #2023:10:16T12:30:45
-        if type(val) == str:
+        if isinstance(val, str):
             str_date = val.split("T")[0].split(":")
             str_time = val.split("T")[1].split(":")
             return datetime(int(str_date[0]), int(str_date[1]), int(str_date[2]),

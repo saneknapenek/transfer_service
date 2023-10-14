@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from fastapi.exceptions import HTTPException
 from fastapi import status
 from jose import jwt

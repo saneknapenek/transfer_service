@@ -5,3 +5,4 @@ alembic.ini
 **draft*
 .env
 requirements.txt
+.pytest_cache

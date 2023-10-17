@@ -1,10 +1,8 @@
 import re
 from uuid import UUID
-from typing import Optional, Annotated
-from enum import Enum
+from typing import Optional
 
 from fastapi.exceptions import HTTPException
-from fastapi.param_functions import Form
 from pydantic import BaseModel, EmailStr, field_validator, constr
 
 from auth.hashing import Hasher

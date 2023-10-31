@@ -126,6 +126,8 @@ async def init_disk(session: AsyncClientYandex = Depends(get_client_session)) ->
 
 @service_router.get("/init/{id}")
 async def check_init(id: str):
+    #не проверяет запись в бд
+    #даёт успех даже если данные незаписаны
     res = AsyncResult(id=id, app=clr)
     if res.ready():
         if res.successful():

@@ -1,13 +1,11 @@
 __pycache__
+.pytest_cache
+.vscode
 /.*
 alembic.ini
 /migrations
 **draft*
 .env
 requirements.txt
-.pytest_cache
-worker/tasks.py
-worker/utils/hashing.py
-worker/utils/schemes.py
-worker/utils/yrequests/__init__.py
-worker/utils/yrequests/sync_requests.py
+worker/utils/
+worker/tasks/

@@ -147,6 +147,8 @@ services:
     
     build: ./worker
 
+    image: saneknapenek/transfer_service_worker:latest
+
     container_name: worker
 
     restart: unless-stopped
@@ -154,7 +156,7 @@ services:
     environment:
       TZ: "Europe/Moscow"
 
-    command: celery -A tasks.clr worker --loglevel=info
+    command: celery -A tasks.tasks.clr worker --loglevel=info
 
     volumes:
       - ./worker:/worker

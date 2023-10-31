@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "worker"
+version = "0.1.0"
+description = ""
+authors = ["saneknapenek <kolesnikovag22@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+celery = "^5.3.4"
+environs = "^9.5.0"
+imagehash = "^4.3.1"
+httpx = "^0.25.0"
+sqlalchemy = "^2.0.22"
+pydantic = "^2.4.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

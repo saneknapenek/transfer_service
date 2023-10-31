@@ -5,24 +5,27 @@ cd ./main_service
 poetry export -f requirements.txt --output requirements.txt
 
 #yandex service
-cd ..
-cd ./yandex_service
+cd ../yandex_service
 poetry export -f requirements.txt --output requirements.txt
 
+#worker
+cd ../worker
+poetry export -f requirements.txt --output requirements.txt
+cp ../yandex_service/src/tasks/tasks.py ./
+mkdir ./utils ./utils/yrequests
+cp ../yandex_service/src/utils/yrequests/sync_requests.py ./utils/yrequests/sync_requests.py
+cp ../yandex_service/src/utils/schemes.py ./utils/
+cp ../yandex_service/src/utils/hashing.py ./utils/
+touch ./utils/yrequests/__init__.py
+
+#transfer service
+cd ..
 docker network create tr_net
 docker compose up
 
-#yandex service
-rm requirements.txt
-
-# docker exec main_s pip install -r requirements.txt
-
-#main service
-cd ..
-cd ./main_service
-rm requirements.txt
-
-# docker exec yandex_s pip install -r requirements.txt
+rm ./yandex_service/requirements.txt
+rm ./main_service/requirements.txt
+rm ./worker/requirements.txt
 
 #make migrations
-./make_migrations.sh
+./main_service/make_migrations.sh

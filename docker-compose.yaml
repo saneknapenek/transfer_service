@@ -91,6 +91,7 @@ services:
       POSTGRES_PASSWORD: "san"
       PGDATA: "/var/lib/postgresql/data/pgdata"
       TZ: "Europe/Moscow"
+      #!
 
     volumes:
       - transferdb-data:/var/lib/postgresql/data
@@ -140,6 +141,29 @@ services:
 
     depends_on:
       - database
+
+
+  worker:
+    
+    build: ./worker
+
+    container_name: worker
+
+    restart: unless-stopped
+
+    environment:
+      TZ: "Europe/Moscow"
+
+    command: celery -A tasks.clr worker --loglevel=info
+
+    volumes:
+      - ./worker:/worker
+
+    networks:
+      - tr_net
+
+    depends_on:
+      - redis
 
 
 networks:

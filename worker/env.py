@@ -1,0 +1,22 @@
+from environs import Env
+
+
+
+env = Env()
+env.read_env(path="./settings.env")
+env.read_env(path="./.env")
+
+REDIS_HOST = env('REDIS_HOST')
+REDIS_PORT = env('REDIS_PORT')
+
+CELERY_BROKER = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
+
+POSTGRESE_USER = env('POSTGRESE_USER')
+POSTGRESE_PASSWORD = env('POSTGRESE_PASSWORD')
+POSTGRES_DB = env('POSTGRES_DB')
+DATABASE_HOST = env('DATABASE_HOST')
+DATABASE_PORT = env('DATABASE_PORT')
+TEST_POSTGRES_DB = env('TEST_POSTGRES_DB')
+
+DATABASE_SYNC_URL = f"postgresql+psycopg2://{POSTGRESE_USER}:{POSTGRESE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{POSTGRES_DB}"

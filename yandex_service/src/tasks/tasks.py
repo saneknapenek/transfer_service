@@ -1,3 +1,4 @@
+from uuid import uuid1
 from datetime import datetime
 
 from celery import Celery
@@ -40,22 +41,21 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
         str_time = exif["datetime"].split(" ")[1].split(":")
         datetime_created = datetime(int(str_date[0]), int(str_date[1]), int(str_date[2]),
                                     int(str_time[0]), int(str_time[1]), int(str_time[2]))
-        gps_latitude = exif["GPSInfo"]["latitude"]
-        gps_longitude = exif["GPSInfo"]["longitude"]
+        gps_latitude, gps_longitude = map(lambda gps: 0.0 if gps is None else gps, (exif["GPSInfo"]["latitude"], exif["GPSInfo"]["longitude"]))
 
         with engine.connect() as conn:
             stmt = text(
                 f"INSERT INTO Media (hash, datetime_created, content_type,\
                                     name_on_service, created_on_service, modified_on_service,\
-                                    gps_latitude, gps_longitude, service_id)\
-                VALUES ({hash_obj}, {datetime_created}, {obj['content_type']},\
-                        {obj['created_on_service']}, {obj['modified_on_service']}, {gps_latitude},\
-                        {gps_longitude}, {user['service']['id']});"
+                                    gps_latitude, gps_longitude, service_id, id)\
+                VALUES ('{hash_obj}', '{datetime_created}', '{obj['content_type']}',\
+                        '{obj['name']}', '{obj['created_on_service']}', '{obj['modified_on_service']}',\
+                        {gps_latitude}, {gps_longitude}, '{user['service']['id']}', '{uuid1(node=datetime.now().second)}');"
             )
             conn.execute(stmt)
 
-        response = SyncYRequests(session).delete(path=obj["name"],
-                                              permanently=True)
+        # response = SyncYRequests(session).delete(path=obj["name"],
+        #                                       permanently=True)
         #?
 
 

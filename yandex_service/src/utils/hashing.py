@@ -37,6 +37,10 @@ class Media(ABC):
         else:
             self.__metadata = self._get_metadata()
             return self.__metadata
+        
+    @property
+    def bytes(self):
+        return self.__obj
 
 
 class SImage(Media):
@@ -45,12 +49,12 @@ class SImage(Media):
     DATETIME = 306
 
     def _get_hash(self) -> str:
-        image = Image.open(self.__obj)
+        image = Image.open(self.bytes)
         hash = imagehash.average_hash(image)
         return str(hash)
     
     def _get_metadata(self) -> dict:
-        img = Image.open(self.__obj)
+        img = Image.open(self.bytes)
         exif_data = img._getexif()
         try:
             gps = exif_data[self.GPSINFO]

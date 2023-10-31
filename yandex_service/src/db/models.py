@@ -26,7 +26,7 @@ class SERVICES(enum.Enum):
 
 class Base(DeclarativeBase):
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4, unique=True)
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid1(node=datetime.now().second), unique=True)
 
     def dict(self) -> dict:
         attributes = {}

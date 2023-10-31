@@ -3,19 +3,19 @@ from datetime import datetime
 from celery import Celery
 from celery.result import AsyncResult
 from httpx import ReadTimeout
+from sqlalchemy import create_engine, text
 
-from utils.yrequests.requests import SyncDelete, SyncDownloader
-from utils.yrequests.auth_yandex import ClientYandex
-from schemes import ObjectFromDisk
-from env import CELERY_BACKEND, CELERY_BROKER
-from utils.sync.sync_db import Session
-from utils.sync.hashing import SImage, SVideo
-from db.models import Media
+from utils.yrequests.sync_requests import ClientYandex, SyncYRequests
+from utils.schemes import ObjectFromDisk
+from env import CELERY_BACKEND, CELERY_BROKER, DATABASE_SYNC_URL
+from utils.hashing import SImage, SVideo
 
 
 
 clr = Celery("tasks", broker=CELERY_BROKER, backend=CELERY_BACKEND)
 clr.autodiscover_tasks()
+
+engine = create_engine(DATABASE_SYNC_URL)
 
 
 @clr.task(bind=True, acks_late=True)
@@ -26,7 +26,7 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
                            root_directory=params_session["root_directory"]) as session:
 
         try:
-            response = SyncDownloader(session=session).download(link)
+            response = SyncYRequests(session=session).download(link)
         except ReadTimeout as exc:
             self.retry(exc=exc, countdown=2)
 
@@ -43,22 +43,18 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
         gps_latitude = exif["GPSInfo"]["latitude"]
         gps_longitude = exif["GPSInfo"]["longitude"]
 
-        with Session() as db_session:
-            new_media = Media(
-                hash=hash_obj,
-                datetime_created=datetime_created,
-                content_type=obj["content_type"],
-                name_on_service=obj["name"],
-                created_on_service=obj["created_on_service"],
-                modified_on_service=obj["modified_on_service"],
-                gps_latitude=gps_latitude,
-                gps_longitude=gps_longitude,
-                service_id=user["service"]["id"]
+        with engine.connect() as conn:
+            stmt = text(
+                f"INSERT INTO Media (hash, datetime_created, content_type,\
+                                    name_on_service, created_on_service, modified_on_service,\
+                                    gps_latitude, gps_longitude, service_id)\
+                VALUES ({hash_obj}, {datetime_created}, {obj['content_type']},\
+                        {obj['created_on_service']}, {obj['modified_on_service']}, {gps_latitude},\
+                        {gps_longitude}, {user['service']['id']});"
             )
-            db_session.add(new_media)
-            db_session.commit()    #if
+            conn.execute(stmt)
 
-        response = SyncDelete(session).delete(path=obj["name"],
+        response = SyncYRequests(session).delete(path=obj["name"],
                                               permanently=True)
         #?
 
@@ -83,11 +79,18 @@ def task_initialization(params_session: dict, objects: list, user: dict):
                                              user=user)
             tasks_id.append(result.id)
 
-    while len(tasks_id) != 0:
-        completed = []
-        for task in tasks_id:
-            res = AsyncResult(task, app=clr)
-            if res.ready():
-                completed.append(task)
+    # while len(tasks_id) != 0:
+    #     completed = []
+    #     for task in tasks_id:
+    #         res = AsyncResult(task, app=clr)
+    #         if res.ready():
+    #             completed.append(task)
 
-        tasks_id = list(filter(lambda item: item not in completed, tasks_id))
+    #     tasks_id = list(filter(lambda item: item not in completed, tasks_id))
+
+# Warning
+# Backends use resources to store and transmit results.
+# To ensure that resources are released, you must eventually call get() or forget()
+# on EVERY AsyncResult instance returned after calling a task.
+
+    #сделать ограничение на количество создаваемых задач

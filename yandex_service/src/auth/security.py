@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.settings import get_db_session
 from db.repositories.service import ServiceAlchemy
 from db.models import SERVICES
-from utils.yrequests.auth_yandex import AsyncClientYandex
+from utils.yrequests.requests import AsyncClientYandex
 from env import (HOST, MAIN_HOST, MAIN_PORT, YANDEX_PORT)
 
 

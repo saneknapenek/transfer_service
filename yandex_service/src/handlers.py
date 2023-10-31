@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient
 from celery.result import AsyncResult
 
-from utils.yrequests.auth_yandex import AsyncClientYandex
+from utils.yrequests.requests import AsyncClientYandex
 from tasks.tasks import clr
 
 from schemes import ListNames

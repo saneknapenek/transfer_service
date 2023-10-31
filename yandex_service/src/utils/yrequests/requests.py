@@ -1,12 +1,77 @@
+import os
+import typing
 from json import dumps
 from datetime import datetime
-import os
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
+from httpx import AsyncClient
+from httpx._config import DEFAULT_LIMITS, DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT_CONFIG, Limits
+from httpx._transports.base import AsyncBaseTransport
+from httpx._types import AuthTypes, CertTypes, CookieTypes, HeaderTypes, ProxiesTypes, QueryParamTypes, TimeoutTypes, URLTypes, VerifyTypes
 
-from .auth_yandex import AsyncClientYandex, ClientYandex
 
+
+class AsyncClientYandex(AsyncClient):
+    """
+    All files that are images or videos and are automatically uploaded are stored in the root of one directory.
+    This directory is "root_directory".
+    """
+
+    def __init__(self, 
+                *,
+                auth: AuthTypes | None = None,
+                params: QueryParamTypes | None = None,
+                headers: HeaderTypes | None = None,
+                cookies: CookieTypes | None = None,
+                verify: VerifyTypes = True,
+                cert: CertTypes | None = None,
+                http1: bool = True,
+                http2: bool = False,
+                proxies: ProxiesTypes | None = None,
+                mounts: typing.Mapping[str, AsyncBaseTransport] | None = None,
+                timeout: TimeoutTypes = DEFAULT_TIMEOUT_CONFIG,
+                follow_redirects: bool = False,
+                limits: Limits = DEFAULT_LIMITS,
+                max_redirects: int = DEFAULT_MAX_REDIRECTS,
+                event_hooks: typing.Mapping[str, typing.List[typing.Callable[..., typing.Any]]] | None = None,
+                base_url: URLTypes = "",
+                transport: AsyncBaseTransport | None = None,
+                app: typing.Callable[..., typing.Any] | None = None,
+                trust_env: bool = True,
+                default_encoding: str | typing.Callable[[bytes], str] = "utf-8",
+                root_directory: str,
+                user: dict):
+        self.root_directory = root_directory
+        self.user = user
+        super().__init__(auth=auth,
+                        params=params,
+                        headers=headers,
+                        cookies=cookies,
+                        verify=verify,
+                        cert=cert,
+                        http1=http1,
+                        http2=http2,
+                        proxies=proxies,
+                        mounts=mounts,
+                        timeout=timeout,
+                        follow_redirects=follow_redirects,
+                        limits=limits,
+                        max_redirects=max_redirects,
+                        event_hooks=event_hooks,
+                        base_url=base_url,
+                        transport=transport,
+                        app=app,
+                        trust_env=trust_env,
+                        default_encoding=default_encoding)
+        
+    @property
+    def custom_params(self) -> dict:
+        return {
+            "Authorization": self.headers["Authorization"],
+            "base_url": str(self.base_url),
+            "root_directory": self.root_directory
+        }
 
 
 class YRequests:
@@ -138,85 +203,3 @@ class YRequests:
             raise HTTPException(status_code=response.status_code,
                                 detail=response.json())
         return response.headers
-    
-
-
-class SyncDownloader:
-
-    def __init__(self, session: ClientYandex) -> None:
-        self.session = session
-        self.root_directory = session.root_directory.strip('/')
-        self.base_url = str(session.base_url).strip('/')
-
-    def download(self, link: str) -> bytes:
-
-        response = self.session.get(
-            url=link
-        )
-        
-        if response.headers["content-type"] == "application/octet-stream":
-            response = self.session.get(
-                url=response.headers["location"]
-            )
-        
-        return response.content
-    
-
-class SyncDelete:
-
-    def __init__(self, session: ClientYandex) -> None:
-        self.session = session
-        self.root_directory = session.root_directory.strip('/')
-        self.base_url = str(session.base_url).strip('/')
-
-    def delete(self, path: str, permanently: bool = False, fields: tuple = None) -> dict | HTTPException:
-        request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}&permanently={permanently}"
-        if fields is not None:  #?
-            request_url = request_url + "&fields" + str(fields)
-        response = self.session.delete(
-            url=request_url,
-        )
-        if response.status_code == status.HTTP_204_NO_CONTENT:
-            return {"content": {"message": "Success"},
-                    "status_code": status.HTTP_200_OK}
-        else:
-            return {"status_code": response.status_code,
-                    "detail": response.json()}
-
-
-class SyncYRequests:
-
-    def __init__(self, session: AsyncClientYandex) -> None:
-        self.session = session
-        self.root_directory = session.root_directory.strip('/')
-        self.base_url = str(session.base_url).strip('/')
-
-    def download(self, link: str) -> bytes:
-
-        response = self.session.get(
-            url=link
-        )
-        
-        if response.headers["content-type"] == "application/octet-stream":
-            response = self.session.get(
-                url=response.headers["location"]
-            )
-        
-        return response.content
-    
-    def delete(self, path: str, permanently: bool = False, fields: tuple = None) -> dict:
-        request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}&permanently={permanently}"
-        if fields is not None:  #?
-            request_url = request_url + "&fields" + str(fields)
-        response = self.session.delete(
-            url=request_url,
-        )
-        if response.status_code == status.HTTP_204_NO_CONTENT:
-            return {"content": {"message": "Success"},
-                    "status_code": status.HTTP_200_OK}
-        else:
-            return {"status_code": response.status_code,
-                    "detail": response.json()}
-        
-    def upload():   #?
-        pass

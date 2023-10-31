@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
+import io
 
 from PIL import Image
 import imagehash
-import io
 
 
 

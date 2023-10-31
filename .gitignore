@@ -6,3 +6,8 @@ alembic.ini
 .env
 requirements.txt
 .pytest_cache
+worker/tasks.py
+worker/utils/hashing.py
+worker/utils/schemes.py
+worker/utils/yrequests/__init__.py
+worker/utils/yrequests/sync_requests.py

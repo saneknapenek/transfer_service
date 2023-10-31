@@ -1,5 +1,4 @@
-from utils.yrequests.requests import YRequests
-from utils.yrequests.auth_yandex import AsyncClientYandex
+from utils.yrequests.requests import YRequests, AsyncClientYandex
 from tasks.tasks import task_initialization
 
 
@@ -48,3 +47,5 @@ async def disk_initialization(session: AsyncClientYandex) -> dict[list, int]:
                               user={"id": session.user["id"],
                                     "service": {"id": str(session.user["service"].id)}})
     return task.id
+    # yield task.id
+    #закрывать task

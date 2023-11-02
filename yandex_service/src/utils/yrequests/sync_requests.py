@@ -1,4 +1,5 @@
 import typing
+from json import dumps
 
 from httpx._status_codes import codes
 from httpx import  Client
@@ -87,5 +88,19 @@ class SyncYRequests:
             return {"status_code": response.status_code,
                     "detail": response.json()}
         
-    def upload():   #?
-        pass
+    def add_metadata_resource(self, path: str, add_param: dict, fields: tuple = None) -> dict:
+        request_url = f"{self.base_url}/?path=/{self.root_directory}/{path.strip('/')}"
+        if fields is not None:
+            request_url = request_url + "&fields" + str(fields)
+        response = self.session.patch(
+            url=request_url,
+            data=dumps({
+                "custom_properties": add_param
+            })
+        )
+        if response.status_code != codes.OK:
+            return {"status_code": response.status_code,
+                    "detail": response.json()}
+        else:
+            return {"content": {"message": "Success"},
+                    "status_code": codes.OK}

@@ -64,7 +64,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme_accsess)]
     user = await UserAlchemy(session=session).get_for_login(username)
     if user is None:
         raise credentials_exception
-    if not await TokenAlchemy(session).get(payload["jti"]) is None:
+    if await TokenAlchemy(session).get(payload["jti"]) is not None:
         raise credentials_exception
     if payload["typ"] == "r":
         raise credentials_exception

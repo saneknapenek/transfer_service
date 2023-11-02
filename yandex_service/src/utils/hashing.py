@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 import io
+from typing import Dict
 
-from PIL import Image
+from PIL import Image, ExifTags
 import imagehash
 
 
@@ -39,36 +40,42 @@ class Media(ABC):
             return self.__metadata
         
     @property
-    def bytes(self):
+    def bytes_obj(self):
         return self.__obj
 
 
 class SImage(Media):
 
-    GPSINFO = 34853
-    DATETIME = 306
+    DATETIME = ExifTags.Base.DateTime
+    GPSINFO = ExifTags.IFD.GPSInfo
 
     def _get_hash(self) -> str:
-        image = Image.open(self.bytes)
+        image = Image.open(self.bytes_obj)
         hash = imagehash.average_hash(image)
         return str(hash)
     
     def _get_metadata(self) -> dict:
-        img = Image.open(self.bytes)
-        exif_data = img._getexif()
-        try:
-            gps = exif_data[self.GPSINFO]
-            latitude = (2 / 3) * (gps[2][0] + gps[2][1] / 60 + gps[2][2] / 3600)
-            longitude = (2 / 3) * (gps[4][0] + gps[4][1] / 60 + gps[4][2] / 3600)
-        except KeyError:
-            latitude = None
-            longitude = None
+        img = Image.open(self.bytes_obj)
+        exif_data: Dict|None = img._getexif()
+        if exif_data is None:
+            latitude = 0.0
+            longitude = 0.0
+            _datetime = None
+        else:
+            try:
+                gps = exif_data[self.GPSINFO]
+                latitude = (2 / 3) * (gps[2][0] + gps[2][1] / 60 + gps[2][2] / 3600)
+                longitude = (2 / 3) * (gps[4][0] + gps[4][1] / 60 + gps[4][2] / 3600)
+            except (KeyError, TypeError):
+                latitude = 0.0
+                longitude = 0.0
+            _datetime = exif_data[self.DATETIME]
         return {
             "GPSInfo": {
                 "latitude": latitude,
                 "longitude": longitude
             },
-            "datetime": exif_data[self.DATETIME]
+            "datetime": _datetime
         }
 
 

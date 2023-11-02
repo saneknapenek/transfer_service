@@ -37,15 +37,18 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
             media = SVideo(response)
         hash_obj = media.hash
         exif = media.metadata
-        str_date = exif["datetime"].split(" ")[0].split(":")
-        str_time = exif["datetime"].split(" ")[1].split(":")
-        datetime_created = datetime(int(str_date[0]), int(str_date[1]), int(str_date[2]),
-                                    int(str_time[0]), int(str_time[1]), int(str_time[2]))
-        gps_latitude, gps_longitude = map(lambda gps: 0.0 if gps is None else gps, (exif["GPSInfo"]["latitude"], exif["GPSInfo"]["longitude"]))
+        if exif["datetime"] is None:
+            datetime_created = obj["created_on_service"]
+        else:
+            str_date = exif["datetime"].split(" ")[0].split(":")
+            str_time = exif["datetime"].split(" ")[1].split(":")
+            datetime_created = datetime(int(str_date[0]), int(str_date[1]), int(str_date[2]),
+                                        int(str_time[0]), int(str_time[1]), int(str_time[2]))
+        gps_latitude, gps_longitude = (exif["GPSInfo"]["latitude"], exif["GPSInfo"]["longitude"])
 
         with engine.connect() as conn:
             stmt = text(
-                f"INSERT INTO Media (hash, datetime_created, content_type,\
+                f"INSERT INTO media (hash, datetime_created, content_type,\
                                     name_on_service, created_on_service, modified_on_service,\
                                     gps_latitude, gps_longitude, service_id, id)\
                 VALUES ('{hash_obj}', '{datetime_created}', '{obj['content_type']}',\
@@ -53,10 +56,18 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
                         {gps_latitude}, {gps_longitude}, '{user['service']['id']}', '{uuid1(node=datetime.now().second)}');"
             )
             conn.execute(stmt)
+            conn.commit()
 
-        # response = SyncYRequests(session).delete(path=obj["name"],
-        #                                       permanently=True)
-        #?
+        response = SyncYRequests(session).add_metadata_resource(
+            path=obj["name"],
+            add_param={
+                "hash": hash_obj,
+                "datetime_created": str(datetime_created),
+                "content_type": obj["content_type"],
+                "gps_latitude": gps_latitude,
+                "gps_longitude": gps_longitude
+            }
+        )
 
 
 @clr.task
@@ -64,7 +75,7 @@ def task_initialization(params_session: dict, objects: list, user: dict):
     
     tasks_id = []
     for obj in objects:
-        if "hash" not in obj["exif"].keys():
+        if "custom_properties" not in obj.keys():
             new_object = ObjectFromDisk(
                 name=obj["name"],
                 content_type=obj["mime_type"],

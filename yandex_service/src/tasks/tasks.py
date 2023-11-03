@@ -50,10 +50,10 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
             stmt = text(
                 f"INSERT INTO media (hash, datetime_created, content_type,\
                                     name_on_service, created_on_service, modified_on_service,\
-                                    gps_latitude, gps_longitude, service_id, id)\
+                                    gps_latitude, gps_longitude, link_orig, service_id, id)\
                 VALUES ('{hash_obj}', '{datetime_created}', '{obj['content_type']}',\
                         '{obj['name']}', '{obj['created_on_service']}', '{obj['modified_on_service']}',\
-                        {gps_latitude}, {gps_longitude}, '{user['service']['id']}', '{uuid1(node=datetime.now().second)}');"
+                        {gps_latitude}, {gps_longitude}, '{link}', '{user['service']['id']}', '{uuid1(node=datetime.now().second)}');"
             )
             conn.execute(stmt)
             conn.commit()

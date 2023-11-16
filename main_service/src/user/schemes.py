@@ -2,12 +2,12 @@ import re
 from uuid import UUID
 from typing import Optional
 
-from fastapi.exceptions import HTTPException
 from pydantic import BaseModel, EmailStr, field_validator, constr
 
 from auth.hashing import Hasher
 
 from db.models import ROLES
+from user.exceptions import FieldValidationError
 
 
 
@@ -49,20 +49,24 @@ class Password(BaseModel):
     @field_validator("password")
     def validate_password(cls, value):
         if not PATTERN_FOR_PASSWORD_NUMBER.search(value):
-            raise HTTPException(
-                status_code=422, detail="String contains at least one number"
+            raise FieldValidationError(
+                loc=["body", "password"],
+                msg="String contains at least one number"
             )
         if not PATTERN_FOR_PASSWORD_LOWWER.search(value):
-            raise HTTPException(
-                status_code=422, detail="String contains at least one lowercase Latin letter"
+            raise FieldValidationError(
+                loc=["body", "password"],
+                msg="String contains at least one lowercase Latin letter"
             )
         if not PATTERN_FOR_PASSWORD_UPPER.search(value):
-            raise HTTPException(
-                status_code=422, detail="String contains at least one uppercase Latin letter"
+            raise FieldValidationError(
+                loc=["body", "password"],
+                msg="String contains at least one uppercase Latin letter"
             )
         if len(value) < 8:
-            raise HTTPException(
-                status_code=422, detail="Password must contain at least eight characters"
+            raise FieldValidationError(
+                loc=["body", "password"],
+                msg="Password must contain at least eight characters"
             )
         hashed_password = Hasher.get_password_hash(value)
         return hashed_password
@@ -76,24 +80,28 @@ class UserUpdateRequest(BaseModel):
     @field_validator("name")
     def validate_name(cls, value):
         if not PATTERN_FOR_NAME.match(value):
-            raise HTTPException(
-                status_code=422, detail="Name should contains only letters"
+            raise FieldValidationError(
+                loc=["body", "name"],
+                msg="Name should contains only letters"
             )
         if len(value) < 1:
-            raise HTTPException(
-                status_code=422, detail="Name must contain at least two characters"
+            raise FieldValidationError(
+                loc=["body", "name"],
+                msg="Name must contain at least two characters"
             )
         return value
 
     @field_validator("login")
     def validate_login(cls, value):
         if not PATTERN_FOR_LOGIN.match(value):
-            raise HTTPException(
-                status_code=422, detail="Login must contain only latin letters, numbers, and underscores"
+            raise FieldValidationError(
+                loc=["body", "login"],
+                msg="Login must contain only latin letters, numbers, and underscores"
             )
         if len(value) < 2:
-            raise HTTPException(
-                status_code=422, detail="Login must contain at least three characters"
+            raise FieldValidationError(
+                loc=["body", "login"],
+                msg="Login must contain at least three characters"
             )
         return value
 

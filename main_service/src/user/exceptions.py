@@ -7,7 +7,9 @@ class UserNotFound(HTTPException):
     def __init__(self, headers: dict[str, str] | None = None) -> None:
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found.",
+            detail={
+                "msg": "User not found"
+            },
             headers=headers
         )
 
@@ -17,7 +19,9 @@ class NotEnoughRights(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough rights.",
+            detail={
+                "msg": "Not enough rights"
+            },
             headers=None
         )
 
@@ -27,7 +31,9 @@ class UserDeactivate(HTTPException):
     def __init__(self, headers: dict[str, str] | None = None) -> None:
         super().__init__(
             status_code=status.HTTP_410_GONE,
-            detail="User has been deleted.",
+            detail={
+                "msg": "User has been deleted"
+            },
             headers=None
         )
 
@@ -37,7 +43,9 @@ class Unauthorized(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail={
+                "msg": "Incorrect username or password"
+            },
             headers={"WWW-Authenticate": "Bearer"}
         )
 
@@ -47,7 +55,9 @@ class UserAlreadyExists(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
-            detail="A user with the same username or email already exists.",
+            detail={
+                "msg": "A user with the same username or email already exists"
+            },
             headers=None
         )
         
@@ -57,7 +67,9 @@ class IncorrectPassword(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect old password",
+            detail={
+                "msg": "Incorrect old password"
+            },
             headers=None
         )
         
@@ -67,6 +79,20 @@ class MatchingPasswords(HTTPException):
     def __init__(self) -> None:
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Old and new password must not match",
+            detail={
+                "msg": "Old and new password must not match"
+            },
             headers=None
+        )
+
+
+class FieldValidationError(HTTPException):
+
+    def __init__(self, loc: list, msg: str) -> None:
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "loc": loc,
+                "msg": msg
+            }
         )

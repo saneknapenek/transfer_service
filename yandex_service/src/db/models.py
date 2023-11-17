@@ -3,7 +3,7 @@ import enum
 from datetime import datetime
 
 
-from sqlalchemy import String, ForeignKey, Enum
+from sqlalchemy import String, ForeignKey, Enum, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 from sqlalchemy import inspect
 from sqlalchemy.orm import ColumnProperty
@@ -55,6 +55,7 @@ class User(Base):
 
 class Media(Base):
     __tablename__ = "media"
+    __table_args__ = UniqueConstraint("hash", "datetime_created", name="init_key"),
 
     hash: Mapped[str] = mapped_column(nullable=False)
     datetime_created: Mapped[datetime] = mapped_column(nullable=False)
@@ -65,17 +66,18 @@ class Media(Base):
     gps_latitude: Mapped[float] = mapped_column(nullable=True)
     gps_longitude: Mapped[float] = mapped_column(nullable=True)
     link_orig: Mapped[str] = mapped_column(nullable=False)
-    service_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("service.id"))
+    service_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("service.id", ondelete="CASCADE"))
     service: Mapped["Service"] = relationship(back_populates="medias")
 
 
 class Service(Base):
     __tablename__ = "service"
+    __table_args__ = UniqueConstraint("name", "user_id", name="unique_service"),
 
     name: Mapped[str] = mapped_column(default=Enum(SERVICES), primary_key=True, nullable=False)
     token: Mapped[str] = mapped_column(nullable=False)
     user_email: Mapped[str] = mapped_column(nullable=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
     user: Mapped["User"] = relationship(back_populates="services")
     medias: Mapped[list["Media"]] = relationship(back_populates="service")
 

@@ -1,0 +1,317 @@
+{
+	"info": {
+		"_postman_id": "dd82cade-b369-457e-bf0f-eb93e181b2cd",
+		"name": "main",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "23536149-dd82cade-b369-457e-bf0f-eb93e181b2cd"
+	},
+	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "get user",
+					"id": "379406a2-3fcc-442b-a2e3-f6d23c19a405",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/?id=b9aa6556-7887-11ee-a1d0-00000000002a",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "b9aa6556-7887-11ee-a1d0-00000000002a"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "da2aadda-670b-49be-9155-f501949f2303"
+		},
+		{
+			"name": "for tests",
+			"item": [
+				{
+					"name": "registration test",
+					"id": "857fe852-a38d-41f8-94b5-0b05d898a930",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"login\": \"test_user_login\",\r\n    \"name\": \"testusername\",\r\n    \"email\": \"testuser@email.com\",\r\n    \"password\": \"testUSER1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/registration",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"registration"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "e88fa431-048d-4a46-91fa-7c245cfdf309"
+		},
+		{
+			"name": "registration",
+			"id": "314e2a96-90eb-4a9e-85d8-901648d6cc10",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"login\": \"{{2login}}\",\r\n  \"name\": \"twoadmin\",\r\n  \"email\": \"{{2email}}\",\r\n  \"password\": \"{{2password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/registration",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"registration"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auth",
+			"id": "f309a552-a338-4a80-9d52-1838cdc31e1a",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "{{2email}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{2password}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/authentication",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"authentication"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "refresh",
+			"id": "015bacee-8832-42b3-96d0-edad9444474f",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{REFRESH_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{base_url}}/refresh",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"refresh"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "change password",
+			"id": "a827a5cd-ab08-41af-b8d2-711136e1730e",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "old_password",
+							"value": "{{password}}",
+							"type": "text"
+						},
+						{
+							"key": "new_password",
+							"value": "adminADMIN1234",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/password",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_current_user",
+			"id": "53681d12-d529-44a4-b162-7f9258881311",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/currentuser",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"currentuser"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "ce0c7939-c4a6-4bc1-b638-c708ee1832f0",
+				"type": "text/javascript",
+				"exec": [
+					"const r = {",
+					"    url: 'http://localhost:8000/authentication',",
+					"    method: 'POST',",
+					"    header: 'application/x-www-form-urlencoded',",
+					"    body: {",
+					"        mode: 'formdata',",
+					"        formdata: [",
+					"            { key: 'username', value: pm.environment.get(\"2email\") },",
+					"            { key: 'password', value: pm.environment.get(\"2password\") }",
+					"        ]",
+					"    }",
+					"};",
+					"pm.sendRequest(r, (err, res) => {",
+					"    const { access_token } = res.json();",
+					"    const { refresh_token } = res.json();",
+					"    pm.globals.set('ACCESS_TOKEN', access_token);",
+					"    pm.globals.set('REFRESH_TOKEN', refresh_token);",
+					"    console.log('ACCESS_TOKEN: ${access_token}');",
+					"    console.log('REFRESH_TOKEN: ${refresh_token}');",
+					"});",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "65db97c0-0b73-404f-9b47-9c4876bca558",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

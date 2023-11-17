@@ -1,0 +1,907 @@
+{
+	"info": {
+		"_postman_id": "a0e13705-6640-4ab5-828e-d127b18b59be",
+		"name": "yandex",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "23536149-a0e13705-6640-4ab5-828e-d127b18b59be"
+	},
+	"item": [
+		{
+			"name": "non local",
+			"item": [
+				{
+					"name": "add metadata",
+					"id": "79205e5d-2d20-4a98-a2d7-dd1697ea5810",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"custom_properties\": {\r\n        \"test\": \"OK\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}?path={{yroot_dir}}/bb.png",
+							"host": [
+								"{{base_url}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{yroot_dir}}/bb.png"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_total",
+					"id": "454d9e71-f36d-4078-a656-50b1d4a17943",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{ytoken2}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{ybase_url}}/?path={{yroot_dir}}&sort=redate&limit=1&fields=_embedded.total",
+							"host": [
+								"{{ybase_url}}"
+							],
+							"path": [
+								""
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{yroot_dir}}"
+								},
+								{
+									"key": "sort",
+									"value": "redate"
+								},
+								{
+									"key": "limit",
+									"value": "1"
+								},
+								{
+									"key": "fields",
+									"value": "_embedded.total"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_2_objects",
+					"id": "0a7f964d-a733-43c8-a125-a839947238cc",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ybase_url}}?path=/{{yroot_dir}}/&sort=name&limit=60&fields=_embedded.items&offset=30",
+							"host": [
+								"{{ybase_url}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "/{{yroot_dir}}/"
+								},
+								{
+									"key": "sort",
+									"value": "name"
+								},
+								{
+									"key": "limit",
+									"value": "60"
+								},
+								{
+									"key": "fields",
+									"value": "_embedded.items"
+								},
+								{
+									"key": "offset",
+									"value": "30"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_object_for_path",
+					"id": "432e5d30-cf82-457b-bb7d-63c1ac1263ed",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{ytoken2}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{ybase_url}}?path={{yroot_dir}}/photo-1698953696871.jpg",
+							"host": [
+								"{{ybase_url}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{yroot_dir}}/photo-1698953696871.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_object_all",
+					"id": "5112e17f-e137-4b2f-86b0-6e16fa9df250",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{ytoken2}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{ybase_url}}?path={{yroot_dir}}",
+							"host": [
+								"{{ybase_url}}"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "{{yroot_dir}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete for name",
+					"id": "5ff73090-9d7b-4234-baa0-e134b0f2fe59",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{ytoken2}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://cloud-api.yandex.net/v1/disk/resources?path=/Фотокамера/q.jpg",
+							"protocol": "https",
+							"host": [
+								"cloud-api",
+								"yandex",
+								"net"
+							],
+							"path": [
+								"v1",
+								"disk",
+								"resources"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "/Фотокамера/q.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "07169b63-b0ad-4eef-be75-1c9d3786ad57"
+		},
+		{
+			"name": "local",
+			"item": [
+				{
+					"name": "temporary",
+					"item": [
+						{
+							"name": "download",
+							"id": "ad23c944-f197-4d08-902c-bf7150bb1c5f",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{ybase_url_local}}/download/?name=black.png",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"path": [
+										"download",
+										""
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "black.png"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_for_name(path)",
+							"id": "f32b6c62-2ac6-4bb5-8e67-2bd6e3d67c6e",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{ybase_url_local}}/?name=black.png",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"path": [
+										""
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "black.png"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete for name",
+							"id": "3ffbdcc4-7b3d-441b-8c24-f5a3a3548c3c",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{ybase_url_local}}?name=UxTf7fI2AOw.jpg",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "UxTf7fI2AOw.jpg"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_for_page",
+							"id": "ed21fe13-5e39-4d19-9bfb-79ec623b0443",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYWRtaW4iLCJleHAiOjE2OTEzMzcxOTUsInR5cCI6ImEiLCJqdGkiOiJmMGU0ZjY0MC03MjFmLTRjMWMtOTJhZi1mNDRlMDRhMWY2NzAifQ.MM4yewLG2YHlcXNG4Ze-s15YssBddQ6kV2I3Cv06qGA",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{ybase_url_local}}/page/1/?quantity_on_page=30",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"path": [
+										"page",
+										"1",
+										""
+									],
+									"query": [
+										{
+											"key": "quantity_on_page",
+											"value": "30"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_for_page first",
+							"id": "3622596a-77c7-4816-806c-f8cd4d4f7335",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYWRtaW4iLCJleHAiOjE2OTEzMzcxOTUsInR5cCI6ImEiLCJqdGkiOiJmMGU0ZjY0MC03MjFmLTRjMWMtOTJhZi1mNDRlMDRhMWY2NzAifQ.MM4yewLG2YHlcXNG4Ze-s15YssBddQ6kV2I3Cv06qGA",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{ybase_url_local}}/page/1/?quantity_on_page=10",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"path": [
+										"page",
+										"1",
+										""
+									],
+									"query": [
+										{
+											"key": "quantity_on_page",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_for_page last",
+							"id": "dcc52d8e-b0b7-4fab-b962-1a92a62575d2",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYWRtaW4iLCJleHAiOjE2OTEzMzcxOTUsInR5cCI6ImEiLCJqdGkiOiJmMGU0ZjY0MC03MjFmLTRjMWMtOTJhZi1mNDRlMDRhMWY2NzAifQ.MM4yewLG2YHlcXNG4Ze-s15YssBddQ6kV2I3Cv06qGA",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{ybase_url_local}}/page/1/?quantity_on_page=3",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"path": [
+										"page",
+										"1",
+										""
+									],
+									"query": [
+										{
+											"key": "quantity_on_page",
+											"value": "3"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "7feccfc5-9c29-4a5b-a344-3427296dbbfd"
+				},
+				{
+					"name": "database",
+					"item": [
+						{
+							"name": "get_media_for_page",
+							"id": "517fa78d-13d9-4992-a8c1-771b33d348b0",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{ybase_url_local}}/inited/?quantity_on_page=3&page=1",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"path": [
+										"inited",
+										""
+									],
+									"query": [
+										{
+											"key": "quantity_on_page",
+											"value": "3"
+										},
+										{
+											"key": "page",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_media_for_id",
+							"id": "96d1c2e6-893c-4e7b-97b8-8acc23912bbb",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{ACCESS_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{ybase_url_local}}/{{service_prefix_y}}/?id=fa487f86-7a20-11ee-9cd6-00000000000f",
+									"host": [
+										"{{ybase_url_local}}"
+									],
+									"path": [
+										"{{service_prefix_y}}",
+										""
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "fa487f86-7a20-11ee-9cd6-00000000000f"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "02121c21-d87e-4f7c-b158-69e59ee9617b",
+					"description": "init objects"
+				}
+			],
+			"id": "6f9a7a10-617b-48a8-958c-f44ca6ef2e31"
+		},
+		{
+			"name": "test",
+			"item": [
+				{
+					"name": "current user",
+					"id": "85ecae9a-b422-4b5d-9100-f1a970162761",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ybase_url_local}}/current_user",
+							"host": [
+								"{{ybase_url_local}}"
+							],
+							"path": [
+								"current_user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "test",
+					"id": "8501af87-840d-4f6e-8d7b-4878202f16f0",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ybase_url_local}}/test",
+							"host": [
+								"{{ybase_url_local}}"
+							],
+							"path": [
+								"test"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "all objects",
+					"id": "5a2689f0-a5da-45fa-9863-e14c22fe6e91",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ybase_url_local}}/all",
+							"host": [
+								"{{ybase_url_local}}"
+							],
+							"path": [
+								"all"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "069301a1-cfc9-4c1a-adf3-bbee60b5d4d1"
+		},
+		{
+			"name": "include",
+			"id": "b0f64b97-173b-4d1f-8c27-fde9bee9c104",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{ybase_url_local}}/include",
+					"host": [
+						"{{ybase_url_local}}"
+					],
+					"path": [
+						"include"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "exclude",
+			"id": "f5491646-85d9-4aab-9d20-4a3247ab30c7",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "{{ybase_url_local}}/exclude",
+					"host": [
+						"{{ybase_url_local}}"
+					],
+					"path": [
+						"exclude"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "init",
+			"id": "aa7cd492-8523-4c9b-a6e3-a8bc467b9b13",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{ybase_url_local}}/{{service_prefix_y}}/init",
+					"host": [
+						"{{ybase_url_local}}"
+					],
+					"path": [
+						"{{service_prefix_y}}",
+						"init"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "check init",
+			"id": "52a6804d-cac0-4a5b-ac78-61e18ca6f5bd",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{ACCESS_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "{{ybase_url_local}}/i/init/0a8f105d-c7e3-483e-ba89-531b40f28b62",
+					"host": [
+						"{{ybase_url_local}}"
+					],
+					"path": [
+						"i",
+						"init",
+						"0a8f105d-c7e3-483e-ba89-531b40f28b62"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"id": "68d5a8b5-bb20-49c4-a186-68b591454d10",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "y0_AgAAAABpEyhmAAoboQAAAADpqOT2ZpCfxRbgSzSnV93Atlb20yC1JAA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://ya.ru/",
+					"protocol": "https",
+					"host": [
+						"ya",
+						"ru"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "ab8ea9e5-4f64-4232-b474-8021ffc30275",
+				"type": "text/javascript",
+				"exec": [
+					"const r = {",
+					"    url: 'http://localhost:8000/authentication',",
+					"    method: 'POST',",
+					"    header: 'application/x-www-form-urlencoded',",
+					"    body: {",
+					"        mode: 'formdata',",
+					"        formdata: [",
+					"            { key: 'username', value: pm.environment.get(\"2email\") },",
+					"            { key: 'password', value: pm.environment.get(\"2password\") }",
+					"        ]",
+					"    }",
+					"};",
+					"pm.sendRequest(r, (err, res) => {",
+					"    const { access_token } = res.json();",
+					"    pm.globals.set('ACCESS_TOKEN', access_token);",
+					"    console.log('ACCESS_TOKEN: ${access_token}');",
+					"});",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "9e7a9783-d91c-4888-b46b-5619d4135fd8",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

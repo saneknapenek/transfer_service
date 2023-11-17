@@ -11,7 +11,7 @@ from sqlalchemy.pool import NullPool
 from src.db import models
 from src.db.models import User
 # from src.db.settings import get_db_session
-from .env import (
+from tests.env import (
     DATABASE_HOST,
     DATABASE_PORT,
     POSTGRESE_PASSWORD,
@@ -101,3 +101,19 @@ async def create_user(get_test_db_session: AsyncSession):
         await get_test_db_session.flush()
         return new_user
     return create_user_in_db
+
+@pytest_asyncio.fixture
+async def get_user_by_login(get_test_db_session: AsyncSession):
+    async def get_user_from_database(login: str):
+        query = select(User).where(User.login==login)
+        res = await get_test_db_session.execute(query)
+        return res.scalar_one_or_none()
+    return get_user_from_database
+
+@pytest_asyncio.fixture
+async def get_user_by_name(get_test_db_session: AsyncSession):
+    async def get_user_from_database(name: str):
+        query = select(User).where(User.name==name)
+        res = await get_test_db_session.execute(query)
+        return res.scalar_one_or_none()
+    return get_user_from_database

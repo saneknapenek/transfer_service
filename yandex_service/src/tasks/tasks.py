@@ -46,6 +46,8 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
                                         int(str_time[0]), int(str_time[1]), int(str_time[2]))
         gps_latitude, gps_longitude = (exif["GPSInfo"]["latitude"], exif["GPSInfo"]["longitude"])
 
+        id = uuid1(node=datetime.now().second)
+
         with engine.connect() as conn:
             stmt = text(
                 f"INSERT INTO media (hash, datetime_created, content_type,\
@@ -53,7 +55,7 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
                                     gps_latitude, gps_longitude, link_orig, service_id, id)\
                 VALUES ('{hash_obj}', '{datetime_created}', '{obj['content_type']}',\
                         '{obj['name']}', '{obj['created_on_service']}', '{obj['modified_on_service']}',\
-                        {gps_latitude}, {gps_longitude}, '{link}', '{user['service']['id']}', '{uuid1(node=datetime.now().second)}');"
+                        {gps_latitude}, {gps_longitude}, '{link}', '{user['service']['id']}', '{id}');"
             )
             conn.execute(stmt)
             conn.commit()
@@ -61,6 +63,7 @@ def task_init_object(self, params_session: dict, link: str, obj: dict, user: dic
         response = SyncYRequests(session).add_metadata_resource(
             path=obj["name"],
             add_param={
+                "id": str(id),
                 "hash": hash_obj,
                 "datetime_created": str(datetime_created),
                 "content_type": obj["content_type"],

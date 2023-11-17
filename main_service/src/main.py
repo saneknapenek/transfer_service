@@ -22,12 +22,9 @@ app.include_router(admin_router)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     error_message = {
-        "detail": [
-            {
-                "loc": exc.errors()[0]["loc"],
-                "msg": exc.errors()[0]["msg"]
-            },
-
-        ]
+        "detail":  {
+            "loc": exc.errors()[0]["loc"],
+            "msg": exc.errors()[0]["msg"]
+        },
     }
     return JSONResponse(status_code=422, content=error_message)

@@ -113,10 +113,10 @@ async def delete_user(id: UUID, session: Annotated[AsyncSession, Depends(get_db_
                       current_user=Depends(get_current_user)):
     if current_user.role == ROLES.USER:
         raise NotEnoughRights
-    if response is None:
-        raise UserNotFound
     if current_user.role == ROLES.SUPER_USER:
         user = await UserAlchemy(session).get(id)
+        if user is None:
+            raise UserNotFound
         if user.role is (ROLES.SUPER_USER, ROLES.ADMIN):
             raise NotEnoughRights
     response = await UserAlchemy(session).delete(id)

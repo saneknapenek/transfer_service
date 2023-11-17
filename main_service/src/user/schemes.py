@@ -16,7 +16,7 @@ PATTERN_FOR_NAME = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 PATTERN_FOR_PASSWORD_LOWWER = re.compile(r"[a-z]+")
 PATTERN_FOR_PASSWORD_UPPER = re.compile(r"[A-Z]+")
 PATTERN_FOR_PASSWORD_NUMBER = re.compile(r"[0-9]+")
-PATTERN_FOR_LOGIN = re.compile(r"^[a-zA-Z_\d]+$")
+PATTERN_FOR_LOGIN = re.compile(r"^[a-zA-Z_.\d]+$")
 
 
 class BaseResponseModel(BaseModel):
@@ -28,6 +28,7 @@ class ResponseUserModel(BaseResponseModel):
 
     id: UUID
     login: str
+    #is email length checked?
     email: EmailStr
     name: str
 
@@ -73,8 +74,8 @@ class Password(BaseModel):
 
 class UserUpdateRequest(BaseModel):
     
-    login: Optional[str]
-    name: Optional[constr(min_length=2)]
+    login: Optional[constr(min_length=2, max_length=30)]
+    name: Optional[constr(min_length=2, max_length=30)]
     email: Optional[EmailStr]
 
     @field_validator("name")
@@ -108,8 +109,8 @@ class UserUpdateRequest(BaseModel):
 
 class UserCreateRequest(UserUpdateRequest, Password):
 
-    login: str
-    name: constr(min_length=1)
+    login: constr(min_length=2, max_length=30)
+    name: constr(min_length=2, max_length=30)
     email: EmailStr
 
 

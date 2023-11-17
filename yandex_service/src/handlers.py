@@ -1,6 +1,7 @@
 import base64
 import json
-from typing import Annotated
+from typing import Annotated, Dict
+from uuid import UUID
 
 from fastapi import Depends, APIRouter, status, Response
 from fastapi.responses import RedirectResponse
@@ -14,7 +15,8 @@ from tasks.tasks import clr
 from schemes import ListNames
 
 from actions import (get_object_for_path, get_objects_for_page, get_link_for_download,
-                     delete_object_for_name, get_all_objects, disk_initialization)
+                     delete_object_for_name, get_all_objects, disk_initialization,
+                     get_media_db)
 
 from env import CLIENT_ID, CLIENT_SECRET
 
@@ -54,11 +56,20 @@ async def include_service(code: str = "",
                     "client_secret": CLIENT_SECRET
                 }
             )
+            access_token = response.json()["access_token"]
+            response = await session.post(
+                url="https://login.yandex.ru/info",
+                headers={
+                    "Content-type": "application/json",
+                    "Authorization": f"OAuth {access_token}"
+                }
+            )
+            user_email = response.json()["emails"][0]
             data = {
                 "name": SERVICES.YANDEX.value,
-                "user_email": "test@test.ru",
+                "user_email": user_email,
                 "user_id": current_user["id"],
-                "token": response.json()["access_token"]
+                "token": access_token
             }
             service_db = ServiceAlchemy(db_session)
             res = await service_db.get_for_user(name=SERVICES.YANDEX.value, user_id=current_user["id"])
@@ -77,7 +88,7 @@ async def exclude_service(current_user=Depends(get_current_user),
     return status.HTTP_200_OK
 
 
-server_router = APIRouter(tags=["server"])
+server_router = APIRouter(tags=["server"]) #for removed server
 
 
 @server_router.get("/")
@@ -91,28 +102,35 @@ async def download(name: str, session: Annotated[AsyncClientYandex, Depends(get_
                     status_code=status.HTTP_200_OK)
 
 @server_router.delete("/")
-async def delete_object(name: str, session: Annotated[AsyncClientYandex, Depends(get_client_session)]):
-    response: dict =  await delete_object_for_name(name=name, session=session)
+async def delete_object(name: str, session: Annotated[AsyncClientYandex, Depends(get_client_session)],
+                        db_session: Annotated[AsyncSession, Depends(get_db_session)]):
+    response: dict =  await delete_object_for_name(name=name, session=session, db_session=db_session)
     return Response(status_code=response["status_code"],
-                    content=response["content"])
+                    content=json.dumps(response["content"]))
 
 @server_router.get("/page/{page}", response_model=list)
 async def get_objects(quantity_on_page: int, page: int, session: Annotated[AsyncClientYandex, Depends(get_client_session)]):
+    if quantity_on_page > 50:
+        quantity_on_page = 50
     response = await get_objects_for_page(
         quantity_on_page, page, session
     )
     return response
 
 
-service_router = APIRouter(tags=["init media"], prefix="/i")
+service_router = APIRouter(tags=["init media"], prefix="/inited")
 
-
-@service_router.get("/page/{name}")
-async def get_init_object(name: str):
-    pass
-
+#не работает
 @service_router.get("/")
+async def get_init_object(id: UUID, current_user=Depends(get_current_user),
+                          db_session=Annotated[AsyncSession, Depends(get_db_session)]):
+    res = await get_media_db(id, current_user, db_session)
+    return json.dumps({})
+
+@service_router.get("/page/{page}")
 async def get_init_objects(quantity_on_page: int, page: int):
+    if quantity_on_page > 50:
+        quantity_on_page = 50
     pass
 
 @service_router.delete("/")

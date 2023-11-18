@@ -65,7 +65,7 @@ class Media(Base):
     modified_on_service: Mapped[datetime] = mapped_column(nullable=False)
     gps_latitude: Mapped[float] = mapped_column(nullable=True)
     gps_longitude: Mapped[float] = mapped_column(nullable=True)
-    link_orig: Mapped[str] = mapped_column(nullable=False)
+    link_orig: Mapped[str] = mapped_column(String(150), nullable=False)
     service_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("service.id", ondelete="CASCADE"))
     service: Mapped["Service"] = relationship(back_populates="medias")
 

@@ -4,12 +4,10 @@ from typing import AsyncGenerator, Generator
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
-from src.db import models
-from src.db.models import User
 # from src.db.settings import get_db_session
 from tests.env import (
     DATABASE_HOST,
@@ -19,6 +17,8 @@ from tests.env import (
     TEST_POSTGRES_DB,
 )
 from httpx import AsyncClient
+
+from src.db import models
 
 
 
@@ -82,7 +82,7 @@ async def get_test_db_session() -> Generator:
 @pytest_asyncio.fixture
 async def get_user_by_id(get_test_db_session: AsyncSession):
     async def get_user_from_database(id: uuid.UUID):
-        query = select(User).where(User.id==id)
+        query = select(models.User).where(models.User.id==id)
         res = await get_test_db_session.execute(query)
         return res.scalar_one_or_none()
     return get_user_from_database
@@ -90,22 +90,15 @@ async def get_user_by_id(get_test_db_session: AsyncSession):
 @pytest_asyncio.fixture
 async def create_user(get_test_db_session: AsyncSession):
     async def create_user_in_db(user_data: dict):
-        new_user = User(
-            name=user_data["name"],
-            login=user_data["login"],
-            email=user_data["email"],
-            is_active=user_data["is_active"],
-            hashed_password=user_data["password"]
-        )
-        get_test_db_session.add(new_user)
-        await get_test_db_session.flush()
-        return new_user
+        stmt = insert(models.User).values(**user_data).returning(models.User)
+        user = await get_test_db_session.execute(stmt)
+        return user.scalar_one_or_none()
     return create_user_in_db
 
 @pytest_asyncio.fixture
 async def get_user_by_login(get_test_db_session: AsyncSession):
     async def get_user_from_database(login: str):
-        query = select(User).where(User.login==login)
+        query = select(models.User).where(models.User.login==login)
         res = await get_test_db_session.execute(query)
         return res.scalar_one_or_none()
     return get_user_from_database
@@ -113,7 +106,15 @@ async def get_user_by_login(get_test_db_session: AsyncSession):
 @pytest_asyncio.fixture
 async def get_user_by_name(get_test_db_session: AsyncSession):
     async def get_user_from_database(name: str):
-        query = select(User).where(User.name==name)
+        query = select(models.User).where(models.User.name==name)
+        res = await get_test_db_session.execute(query)
+        return res.scalar_one_or_none()
+    return get_user_from_database
+
+@pytest_asyncio.fixture
+async def get_user_by_email(get_test_db_session: AsyncSession):
+    async def get_user_from_database(email: str):
+        query = select(models.User).where(models.User.email==email)
         res = await get_test_db_session.execute(query)
         return res.scalar_one_or_none()
     return get_user_from_database

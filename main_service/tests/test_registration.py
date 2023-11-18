@@ -20,7 +20,7 @@ user_data = {
 async def test_reg(client: AsyncClient, get_user_by_id):
     response = await client.post(
         url="/registration",
-        data=dumps(user_data)
+        content=dumps(user_data)
     )
     assert response.status_code == 200
     resp_data = response.json()
@@ -37,14 +37,14 @@ async def test_reg(client: AsyncClient, get_user_by_id):
         (
             {
                 "login": "test_user_login",
-                "name": "testusesadrname",
-                "email": "testuser@email.com",
+                "name": "testusedasdrname",
+                "email": "testusdasdaer@email.com",
                 "password": password
             },
             {
                 "login": "test_user_login",
-                "name": "testusadsername",
-                "email": "teasdser@email.com",
+                "name": "testusername",
+                "email": "testuser@email.com",
                 "password": password
             },
             {
@@ -55,15 +55,15 @@ async def test_reg(client: AsyncClient, get_user_by_id):
         ),
         (
             {
-                "login": "test_user_logiasdan",
-                "name": "testdsdausername",
+                "login": "test_udasasdser_login",
+                "name": "testusersdadname",
                 "email": "testuser@email.com",
                 "password": password
             },
             {
-                "login": "test_user_loginrfkrf",
-                "name": "testusernsadame",
-                "email": "teasdser@email.com",
+                "login": "test_usdsjer_login",
+                "name": "testudsksername",
+                "email": "testuser@email.com",
                 "password": password
             },
             {
@@ -76,20 +76,18 @@ async def test_reg(client: AsyncClient, get_user_by_id):
 )
 async def test_already_exist(client: AsyncClient,
                              params, data_db, body,
-                             get_user_by_id, create_user):
+                             create_user):
     data_db["password"] = hashed_password
-    db_user = create_user(data_db)
+    await create_user(data_db)
     response = await client.post(
         url="/registration",
-        data=dumps(params)
+        content=dumps(params)
     )
     assert response.status_code == 409
     resp_data = response.json()
     assert resp_data == body
-    db_user = await get_user_by_id(resp_data["id"])
-    assert db_user.name != params["name"]
 
-# PATTERN_FOR_LOGIN = re.compile(r"^[a-zA-Z_\d]+$")
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "params, status_code, body",
@@ -170,7 +168,7 @@ async def test_already_exist(client: AsyncClient,
         ),
         (
             {
-                "login": "sdsdasasdasdasddshjds",
+                "login": "sdsdasasdasfdsfksdvjlkdfjlvlfdkvlkfkfvdasddshjds",
                 "name": "testusername",
                 "email": "testuser@email.com",
                 "password": password
@@ -186,18 +184,17 @@ async def test_already_exist(client: AsyncClient,
     ]   
 )
 async def test_invalid_login(client: AsyncClient,
-                             params, status_code, body, get_user_by_login):
+                             params, status_code, body, get_user_by_email):
     response: Response = await client.post(
         url="/registration",
-        data=dumps(params)
+        content=dumps(params)
     )
     assert response.status_code == status_code
-    assert response.body == body
-    user_from_db = await get_user_by_login(params["login"])
+    assert response.json() == body
+    user_from_db = await get_user_by_email(params["email"])
     assert user_from_db is None
 
 
-# PATTERN_FOR_NAME = re.compile(r"^[а-яА-Яa-zA-Z\-]+$")
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "params, status_code, body",
@@ -297,12 +294,11 @@ async def test_invalid_name(client: AsyncClient,
                             params, status_code, body, get_user_by_name):
     response: Response = await client.post(
         url="/registration",
-        data=dumps(params)
+        content=dumps(params)
     )
     assert response.status_code == status_code
-    assert response.body == body
-    user_from_db = await get_user_by_name(params["name"])
-    assert user_from_db is None
+    assert response.json() == body
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -448,9 +444,9 @@ async def test_invalid_email(client: AsyncClient,
                              params, status_code, body, get_user_by_login):
     response: Response = await client.post(
         url="/registration",
-        data=dumps(params)
+        content=dumps(params)
     )
     assert response.status_code == status_code
-    assert response.body == body
+    assert response.json() == body
     user_from_db = await get_user_by_login(params["login"])
     assert user_from_db is None

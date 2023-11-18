@@ -42,7 +42,7 @@ class Unauthorized(HTTPException):
 
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={
                 "msg": "Incorrect username or password"
             },

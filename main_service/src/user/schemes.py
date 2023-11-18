@@ -74,8 +74,8 @@ class Password(BaseModel):
 
 class UserUpdateRequest(BaseModel):
     
-    login: Optional[constr(min_length=2, max_length=30)]
-    name: Optional[constr(min_length=2, max_length=30)]
+    login: Optional[constr(min_length=2, max_length=50)]
+    name: Optional[constr(min_length=2, max_length=50)]
     email: Optional[EmailStr]
 
     @field_validator("name")
@@ -109,8 +109,8 @@ class UserUpdateRequest(BaseModel):
 
 class UserCreateRequest(UserUpdateRequest, Password):
 
-    login: constr(min_length=2, max_length=30)
-    name: constr(min_length=2, max_length=30)
+    login: constr(min_length=2, max_length=50)
+    name: constr(min_length=2, max_length=50)
     email: EmailStr
 
 

@@ -7,6 +7,7 @@ from sqlalchemy import String, ForeignKey, Enum, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 from sqlalchemy import inspect
 from sqlalchemy.orm import ColumnProperty
+from sqlalchemy.dialects.postgresql import UUID
 
 
 
@@ -26,7 +27,7 @@ class SERVICES(enum.Enum):
 
 class Base(DeclarativeBase):
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid1(node=datetime.now().second), unique=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid1, unique=True)
 
     def dict(self) -> dict:
         attributes = {}
@@ -40,9 +41,9 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "user"
 
-    login : Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
-    email: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
-    name: Mapped[str] = mapped_column(String(30), nullable=False)
+    login : Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(75), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(50), nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
     password: Mapped[str] = mapped_column(nullable=False)
     role: Mapped[int] = mapped_column(default=ROLES.USER.value)
@@ -85,5 +86,5 @@ class Service(Base):
 class UsedTokens(Base):
     __tablename__ = "used_tokens"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     created: Mapped[datetime] = mapped_column(default=datetime.utcnow())

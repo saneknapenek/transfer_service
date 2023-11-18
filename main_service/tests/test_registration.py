@@ -168,7 +168,7 @@ async def test_already_exist(client: AsyncClient,
         ),
         (
             {
-                "login": "sdsdasasdasfdsfksdvjlkdfjlvlfdkvlkfkfvdasddshjds",
+                "login": "sdsdasasdasfdsfksdvjlkdfjldasdddddddddddddddfefrfsdsdcdsvlfdkvlkfkfvdasddshjds",
                 "name": "testusername",
                 "email": "testuser@email.com",
                 "password": password
@@ -177,7 +177,7 @@ async def test_already_exist(client: AsyncClient,
             {
                 "detail": {
                     "loc": ["body", "login"],
-                    "msg": "String should have at most 30 characters"
+                    "msg": "String should have at most 50 characters"
                 }
             }
         ),
@@ -261,7 +261,7 @@ async def test_invalid_login(client: AsyncClient,
         (
             {
                 "login": "test_user_login",
-                "name": "testusernamefsdfjdjsjdsksdlfdslfdfs",
+                "name": "testusernamefsdfjdjsjfdsssssssssssssssssssssssfadfafdvfvddsksdlfdslfdfs",
                 "email": "testuser@email.com",
                 "password": password
             },
@@ -269,7 +269,7 @@ async def test_invalid_login(client: AsyncClient,
             {
                 "detail": {
                     "loc": ["body", "name"],
-                    "msg": "String should have at most 30 characters"
+                    "msg": "String should have at most 50 characters"
                 }
             }
         ),
@@ -291,7 +291,7 @@ async def test_invalid_login(client: AsyncClient,
     ]   
 )
 async def test_invalid_name(client: AsyncClient,
-                            params, status_code, body, get_user_by_name):
+                            params, status_code, body):
     response: Response = await client.post(
         url="/registration",
         content=dumps(params)

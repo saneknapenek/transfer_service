@@ -450,3 +450,71 @@ async def test_invalid_email(client: AsyncClient,
     assert response.json() == body
     user_from_db = await get_user_by_login(params["login"])
     assert user_from_db is None
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "form, status_code, body",
+    [
+        (
+            {
+                'username': 'testuser@email.com',
+            },
+            422,
+            {
+                "detail": {
+                    'loc': ['body', 'password'],
+                    'msg': 'Field required'
+                }
+            }
+        ),
+        (
+            {
+                'username': 'testuser@email.com',
+                'password': ''
+            },
+            422,
+            {
+                'detail': {
+                    'loc': ['body', 'password'], 
+                    'msg': 'String should have at least 8 characters'
+                }
+            }
+        ),
+        (
+            {
+                'username': 'testuser@email.com',
+                'password': 'dsdasdasdasdasdstUSER1234testUSER1234testUSERasda1234testUSER1234testUSER1234testUSER1234testUSER123'
+            },
+            422,
+            {
+                'detail': {
+                    'loc': ['body', 'password'],
+                    'msg': 'String should have at most 30 characters'
+                }
+            }
+        ),
+        (
+            {
+                'username': 'testuser@email.com',
+                'password': 324213412312312432432
+            },
+            422,
+            {
+                'detail': {
+                    'loc': ['body', 'password'],
+                    'msg': 'Input should be a valid string'
+                }
+            }
+        ),
+    ]   
+)
+async def test_invalid_password(client: AsyncClient, get_user_by_login, 
+                                form, status_code, body):
+    response: Response = await client.post(
+        url="/registration",
+        content=dumps(form)
+    )
+    assert response.status_code == status_code
+    assert response.json() == body
+    user_from_db = await get_user_by_login(form["username"])
+    assert user_from_db is None

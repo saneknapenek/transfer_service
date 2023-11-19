@@ -27,6 +27,7 @@ from user.exceptions import (
 )
 from user.schemes import (
     Email,
+    Login,
     Password,
     ResponseUserExtended,
     ResponseUserModel,
@@ -131,11 +132,15 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(get_db_session)]
 ):    
-    try:
-        email = Email(email=form_data.username).email
-        user = await authenticate_user(email=email, password=form_data.password, session=session)
-    except ValidationError:
-        user = await authenticate_user(username=form_data.username, password=form_data.password, session=session)
+    if Password.is_password(form_data.password):
+        if Login.is_login(form_data.username):
+            user = await authenticate_user(username=form_data.username, password=form_data.password, session=session)
+        elif Email.check_lenght(form_data.username):
+            user = await authenticate_user(email=form_data.username, password=form_data.password, session=session)
+        else:
+            raise Unauthorized
+    else:
+        raise Unauthorized
     if user is None:
         raise Unauthorized
     if not user.is_active:
@@ -145,10 +150,7 @@ async def login_for_access_token(
 
 @auth_router.post("/registration", response_model=ResponseUserModel)
 async def registration(data: UserCreateRequest, session: Annotated[AsyncSession, Depends(get_db_session)]):
-    try:
-        result = await UserAlchemy(session=session).create(data=data.model_dump())
-    except IntegrityError:
-        raise UserAlreadyExists
+    result = await UserAlchemy(session=session).create(data=data.model_dump())
     return result.dict()
 
 @auth_router.post("/refresh")

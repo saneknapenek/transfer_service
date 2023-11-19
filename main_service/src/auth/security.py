@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.exceptions import HTTPException
 from jose import JWTError, ExpiredSignatureError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import DeclarativeBase
 
 from db.settings import get_db_session
 from db.repositories.user import UserAlchemy
@@ -23,14 +24,6 @@ async def authenticate_user(password: str, session: AsyncSession, username: str 
     if username is None:
         user = await UserAlchemy(session).get_for_email(email)
     else:
-        if len(username) > 30:
-            raise HTTPException(
-                status_code=422,
-                detail= {
-                    'loc': ['body', 'password'],
-                    'msg': 'String should have at most 30 characters'
-                }
-            )
         user = await UserAlchemy(session).get_for_login(username)
     if user is None:
         return None
@@ -54,7 +47,10 @@ async def create_tokens(data: dict) -> dict:
     return {"access_token": access_jwt, "refresh_token": refresh_jwt, "token_type": "bearer"}
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme_accsess)], session: Annotated[AsyncSession, Depends(get_db_session)]):
+async def get_current_user(
+            token: Annotated[str, Depends(oauth2_scheme_accsess)],
+            session: Annotated[AsyncSession, Depends(get_db_session)]
+        ) -> DeclarativeBase:
     
     try:
         options = {"require_jti": True,

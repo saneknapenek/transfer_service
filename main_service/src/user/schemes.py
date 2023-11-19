@@ -1,6 +1,6 @@
 import re
 from uuid import UUID
-from typing import Optional
+from typing import Optional, ClassVar
 
 from pydantic import BaseModel, EmailStr, field_validator, constr
 
@@ -28,7 +28,6 @@ class ResponseUserModel(BaseResponseModel):
 
     id: UUID
     login: str
-    #is email length checked?
     email: EmailStr
     name: str
 
@@ -42,10 +41,18 @@ class Email(BaseModel):
 
     email: EmailStr
 
+    @staticmethod
+    def check_lenght(value):
+        return (isinstance(value, str)
+                and len(value) <= 75)
+
 
 class Password(BaseModel):
 
-    password: str
+    MAX_L: ClassVar = 30
+    MIN_L: ClassVar = 8
+
+    password: constr(min_length=MIN_L, max_length=MAX_L)
 
     @field_validator("password")
     def validate_password(cls, value):
@@ -64,33 +71,24 @@ class Password(BaseModel):
                 loc=["body", "password"],
                 msg="String contains at least one uppercase Latin letter"
             )
-        if len(value) < 8:
-            raise FieldValidationError(
-                loc=["body", "password"],
-                msg="Password must contain at least eight characters"
-            )
         hashed_password = Hasher.get_password_hash(value)
         return hashed_password
-
-class UserUpdateRequest(BaseModel):
     
-    login: Optional[constr(min_length=2, max_length=50)]
-    name: Optional[constr(min_length=2, max_length=50)]
-    email: Optional[EmailStr]
+    @classmethod
+    def is_password(cls, value):
+        return (isinstance(value, str)
+                and cls.MIN_L <= len(value) <= cls.MAX_L
+                and PATTERN_FOR_PASSWORD_NUMBER.search(value)
+                and PATTERN_FOR_PASSWORD_LOWWER.search(value)
+                and PATTERN_FOR_PASSWORD_UPPER.search(value))
+    
 
-    @field_validator("name")
-    def validate_name(cls, value):
-        if not PATTERN_FOR_NAME.match(value):
-            raise FieldValidationError(
-                loc=["body", "name"],
-                msg="Name should contains only letters"
-            )
-        if len(value) < 1:
-            raise FieldValidationError(
-                loc=["body", "name"],
-                msg="Name must contain at least two characters"
-            )
-        return value
+class Login(BaseModel):
+
+    MAX_L: ClassVar = 50
+    MIN_L: ClassVar = 2
+
+    login: constr(min_length=MIN_L, max_length=MAX_L)
 
     @field_validator("login")
     def validate_login(cls, value):
@@ -99,19 +97,42 @@ class UserUpdateRequest(BaseModel):
                 loc=["body", "login"],
                 msg="Login must contain only latin letters, numbers, and underscores"
             )
-        if len(value) < 2:
+        return value
+
+    @classmethod
+    def is_login(cls, value):
+        return (isinstance(value, str)
+                and cls.MIN_L <= len(value) <= cls.MAX_L
+                and PATTERN_FOR_LOGIN.match(value))
+
+
+class Name(BaseModel):
+
+    MAX_L: ClassVar = 50
+    MIN_L: ClassVar = 2
+
+
+    name: constr(min_length=MIN_L, max_length=MAX_L)
+
+    @field_validator("name")
+    def validate_name(cls, value):
+        if not PATTERN_FOR_NAME.match(value):
             raise FieldValidationError(
-                loc=["body", "login"],
-                msg="Login must contain at least three characters"
+                loc=["body", "name"],
+                msg="Name should contains only letters"
             )
         return value
 
 
-class UserCreateRequest(UserUpdateRequest, Password):
+class UserCreateRequest(Login, Name, Email, Password):
+    pass
 
-    login: constr(min_length=2, max_length=50)
-    name: constr(min_length=2, max_length=50)
-    email: EmailStr
+
+class UserUpdateRequest(Login, Name, Email):
+    
+    login: Optional[constr(min_length=Login.MIN_L, max_length=Login.MAX_L)]
+    name: Optional[constr(min_length=Name.MIN_L, max_length=Name.MAX_L)]
+    email: Optional[EmailStr]
 
 
 class UserUpdateRole(BaseModel):

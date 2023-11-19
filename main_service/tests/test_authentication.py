@@ -244,7 +244,7 @@ async def test_auth_invalid_email(client: AsyncClient, create_user,
         ),
         (
             {
-                "username": "sdsdasasdasfdsfksdvjlkdfjldasdddddddddddddddfefrfsdsdcdsvlfdkvlkfkfvdasddshjds",
+                "username": "sdsdasasdasfdsfksdvjlkdfjldasdddddddddddddddfefrfsfsdfsdffffffffffffffffffffffffffffffffffffffffffffffffffsdsdcdsvlfdkvlkfkfvdasddshjds",
                 "password": password
             },
             422,
@@ -302,7 +302,7 @@ async def test_invalid_login(client: AsyncClient, create_user,
         (
             {
                 'username': 'testuser@email.com',
-                'password': 'testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234testUSER1234'
+                'password': 'dsdasdasdasdasdstUSER1234testUSER1234testUSERasda1234testUSER1234testUSER1234testUSER1234testUSER123'
             },
             422,
             {
